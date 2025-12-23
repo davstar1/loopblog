@@ -63,7 +63,7 @@ export default function Navbar() {
           )}
 
           <NavLink to="/videos" onClick={() => setOpen(false)}>
-            YouTube
+            Video
           </NavLink>
 
           <NavLink to="/playlist" onClick={() => setOpen(false)}>
