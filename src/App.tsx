@@ -6,6 +6,8 @@ import Post from "./pages/Post";
 import Videos from "./pages/Videos";
 import Playlist from "./pages/Playlist";
 import Gallery from "./pages/Gallery";
+import Admin from "./pages/Admin";
+import RequireAuth from "./components/RequireAuth";
 
 export default function App() {
   return (
@@ -14,12 +16,21 @@ export default function App() {
       <main className="container">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/write" element={<Write />} />
+          <Route
+            path="/write"
+            element={
+              <RequireAuth>
+                <Write />
+              </RequireAuth>
+            }
+          />
+
           <Route path="/post/:id" element={<Post />} />
           <Route path="/videos" element={<Videos />} />
           <Route path="/playlist" element={<Playlist />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>
       <footer className="footer">© {new Date().getFullYear()} LoopBlog</footer>

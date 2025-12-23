@@ -1,19 +1,33 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addPost } from "../lib/posts";
-import type { BlogPost } from "../lib/types";
-import { saveImage } from "../lib/imagesDb";
+import { uploadBlogImage } from "../lib/uploadImage";
 
 type PendingImage = { file: File; previewUrl: string };
 
+function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 80);
+}
+
 export default function Write() {
   const nav = useNavigate();
+
   const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
   const [body, setBody] = useState("");
   const [tagsRaw, setTagsRaw] = useState("looping, guitar");
   const [pending, setPending] = useState<PendingImage[]>([]);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [stage, setStage] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(0);
 
   const tags = useMemo(() => {
     return tagsRaw
@@ -41,34 +55,87 @@ export default function Write() {
       return copy;
     });
   }
+  function prettyError(e: any) {
+    const msg = e?.message || String(e);
+
+    if (msg.toLowerCase().includes("row-level security")) {
+      return "Upload blocked by Supabase security (RLS). Make sure you’re logged in and your Storage INSERT policy exists for bucket 'loopblogimages'.";
+    }
+    if (msg.toLowerCase().includes("bucket not found")) {
+      return "Storage bucket not found. Confirm your bucket name is exactly 'loopblogimages' in code and in Supabase Storage.";
+    }
+    if (msg.toLowerCase().includes("not-null constraint")) {
+      return "A required database field is missing. This usually means your insert payload doesn’t match your table columns.";
+    }
+    if (e?.status === 413 || msg.toLowerCase().includes("payload too large")) {
+      return "Image is too large. Try a smaller image or compress it before uploading.";
+    }
+
+    return msg;
+  }
 
   async function onSave() {
     setErr(null);
-    if (!title.trim()) return setErr("Title is required.");
-    if (!body.trim()) return setErr("Body is required.");
+    setStage(null);
+    setStep(0);
+    setTotalSteps(0);
+
+    const cleanTitle = title.trim();
+    const cleanBody = body.trim();
+    const cleanExcerpt = excerpt.trim();
+
+    if (!cleanTitle) return setErr("Title is required.");
+    if (!cleanBody) return setErr("Body is required.");
 
     setSaving(true);
     try {
-      const imageIds: string[] = [];
-      for (const item of pending) {
-        const id = await saveImage(item.file);
-        imageIds.push(id);
+      const slug = slugify(cleanTitle) || `post-${Date.now()}`;
+
+      const willUploadCover = pending.length > 0;
+      const steps = (willUploadCover ? 1 : 0) + 1;
+      setTotalSteps(steps);
+
+      // Step 1: upload cover (optional)
+      let cover_path: string | null = null;
+      if (willUploadCover) {
+        setStage("Uploading cover image…");
+        setStep(1);
+
+        const uploaded = await uploadBlogImage(pending[0].file, "covers");
+        cover_path = uploaded.path;
       }
 
-      const post: BlogPost = {
-        id: crypto.randomUUID(),
-        title: title.trim(),
-        body: body.trim(),
-        createdAt: new Date().toISOString(),
-        imageIds,
-        tags,
-      };
+      // Step 2: insert post
+      setStage("Saving post to Supabase…");
+      setStep(steps);
 
-      addPost(post);
+      const created = await addPost({
+        title: cleanTitle,
+        slug,
+        excerpt: cleanExcerpt || null,
+        body_md: cleanBody,
+        cover_path,
+        status: "published",
+      });
+
       pending.forEach((p) => URL.revokeObjectURL(p.previewUrl));
-      nav(`/post/${post.id}`);
+      setPending([]);
+
+      setStage(null);
+      nav(`/post/${created.id}`);
     } catch (e: any) {
-      setErr(e?.message ?? "Failed to save post.");
+      console.error(e);
+
+      const rawMsg = e?.message ?? "";
+      if (rawMsg.includes("posts_slug_key")) {
+        setErr(
+          "A post with this slug already exists. Change the title and try again."
+        );
+      } else {
+        setErr(prettyError(e));
+      }
+
+      setStage(null);
     } finally {
       setSaving(false);
     }
@@ -78,7 +145,10 @@ export default function Write() {
     <section className="stack">
       <div className="sectionTitle">
         <h2>Write a Post</h2>
-        <span className="muted">Images persist (IndexedDB)</span>
+        <span className="muted">
+          Saving to Supabase • Tags (UI only):{" "}
+          {tags.length ? tags.join(", ") : "none"}
+        </span>
       </div>
 
       <div className="card stack">
@@ -92,7 +162,16 @@ export default function Write() {
         </label>
 
         <label className="field">
-          <span>Tags (comma-separated)</span>
+          <span>Excerpt (optional)</span>
+          <input
+            value={excerpt}
+            onChange={(e) => setExcerpt(e.target.value)}
+            placeholder="Short summary that shows on Home..."
+          />
+        </label>
+
+        <label className="field">
+          <span>Tags (comma-separated) — UI only</span>
           <input
             value={tagsRaw}
             onChange={(e) => setTagsRaw(e.target.value)}
@@ -101,7 +180,7 @@ export default function Write() {
         </label>
 
         <label className="field">
-          <span>Body</span>
+          <span>Body (Markdown)</span>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -111,7 +190,7 @@ export default function Write() {
         </label>
 
         <div className="field">
-          <span>Images</span>
+          <span>Cover Image (optional)</span>
           <div className="dropzone">
             <input
               type="file"
@@ -119,7 +198,9 @@ export default function Write() {
               multiple
               onChange={(e) => onPickFiles(e.target.files)}
             />
-            <p className="muted">Pick up to 12 images (JPG/PNG/WebP).</p>
+            <p className="muted">
+              Pick up to 12 images. The first becomes the cover.
+            </p>
           </div>
 
           {pending.length > 0 && (
@@ -131,6 +212,7 @@ export default function Write() {
                     className="xBtn"
                     onClick={() => removePending(i)}
                     aria-label="Remove image"
+                    type="button"
                   >
                     ✕
                   </button>
@@ -140,13 +222,29 @@ export default function Write() {
           )}
         </div>
 
+        {stage && (
+          <div className="card">
+            <div className="muted">{stage}</div>
+            {totalSteps > 0 && (
+              <div className="muted">
+                Step {step} of {totalSteps}
+              </div>
+            )}
+          </div>
+        )}
+
         {err && <div className="error">{err}</div>}
 
         <div className="row">
-          <button className="btn" onClick={onSave} disabled={saving}>
-            {saving ? "Saving..." : "Publish"}
+          <button
+            className="btn"
+            onClick={onSave}
+            disabled={saving}
+            type="button"
+          >
+            {saving ? "Publishing..." : "Publish"}
           </button>
-          <button className="btn ghost" onClick={() => nav("/")}>
+          <button className="btn ghost" onClick={() => nav("/")} type="button">
             Cancel
           </button>
         </div>

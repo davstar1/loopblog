@@ -1,42 +1,82 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getPost } from "../lib/posts";
-import { getImageBlob } from "../lib/imagesDb";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { getPost, type PostRow } from "../lib/posts";
+import { supabase } from "../lib/supabase";
+
+function coverUrlFromPath(path: string | null) {
+  if (!path) return null;
+  return supabase.storage.from("loopblogimages").getPublicUrl(path).data
+    .publicUrl;
+}
 
 export default function Post() {
-  const { id } = useParams();
-  const post = useMemo(() => (id ? getPost(id) : undefined), [id]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const { id } = useParams<{ id: string }>();
+
+  const [post, setPost] = useState<PostRow | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    const urlsToRevoke: string[] = [];
 
-    async function load() {
-      if (!post) return;
-      const urls: string[] = [];
-      for (const imageId of post.imageIds) {
-        const blob = await getImageBlob(imageId);
-        if (!blob) continue;
-        const url = URL.createObjectURL(blob);
-        urlsToRevoke.push(url);
-        urls.push(url);
+    (async () => {
+      try {
+        setLoading(true);
+        setErr(null);
+
+        if (!id) {
+          setPost(null);
+          return;
+        }
+
+        const row = await getPost(id);
+        if (alive) setPost(row);
+      } catch (e: any) {
+        console.error(e);
+        if (alive) {
+          setErr(e?.message ?? "Failed to load post.");
+          setPost(null);
+        }
+      } finally {
+        if (alive) setLoading(false);
       }
-      if (alive) setImageUrls(urls);
-    }
-
-    load();
+    })();
 
     return () => {
       alive = false;
-      urlsToRevoke.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [post]);
+  }, [id]);
+
+  if (loading) {
+    return (
+      <section className="stack">
+        <div className="card">
+          <p className="muted">Loading…</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (err) {
+    return (
+      <section className="stack">
+        <div className="card stack">
+          <h2>Error</h2>
+          <p className="error">{err}</p>
+          <Link className="btn" to="/">
+            Go Home
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   if (!post) {
     return (
       <section className="stack">
-        <div className="card">
+        <div className="card stack">
           <h2>Post not found</h2>
           <p className="muted">That post doesn’t exist.</p>
           <Link className="btn" to="/">
@@ -47,45 +87,37 @@ export default function Post() {
     );
   }
 
+  const coverUrl = coverUrlFromPath(post.cover_path);
+
   return (
     <section className="stack">
       <div className="card stack">
         <div className="metaRow">
           <span className="chip">
-            {new Date(post.createdAt).toLocaleString()}
+            {new Date(post.published_at ?? post.created_at).toLocaleString()}
           </span>
-          {post.tags.map((t) => (
-            <span className="chip" key={t}>
-              #{t}
-            </span>
-          ))}
+          <span className="chip">{post.status}</span>
         </div>
 
         <h1 className="postTitle">{post.title}</h1>
-        <p className="postBody">{post.body}</p>
 
-        {imageUrls.length > 0 && (
-          <>
-            <div className="sectionTitle">
-              <h3>Images</h3>
-              <span className="muted">{imageUrls.length} attached</span>
-            </div>
+        {post.excerpt && <p className="muted">{post.excerpt}</p>}
 
-            <div className="thumbGrid big">
-              {imageUrls.map((url) => (
-                <a
-                  key={url}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="thumb"
-                >
-                  <img src={url} alt="post" />
-                </a>
-              ))}
-            </div>
-          </>
+        {coverUrl && (
+          <a href={coverUrl} target="_blank" rel="noreferrer" className="thumb">
+            <img
+              src={coverUrl}
+              alt={post.title}
+              style={{ width: "100%", borderRadius: 16 }}
+            />
+          </a>
         )}
+
+        <div className="postBody">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {post.body_md ?? ""}
+          </ReactMarkdown>
+        </div>
 
         <div className="row">
           <Link className="btn ghost" to="/">
