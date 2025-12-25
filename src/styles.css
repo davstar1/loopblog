@@ -974,3 +974,29 @@ section.stack > h1{
   border-top: 1px solid var(--line);
   background: rgba(0,0,0,.18);
 }
+/* =========================
+   POST PAGE BODY TYPOGRAPHY (news-style)
+========================= */
+.postShell .postBody{
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: clamp(18px, 1.2vw + 14px, 22px); /* responsive like the screenshot */
+  font-weight: 400;
+  line-height: 1.75;
+  letter-spacing: 0;
+}
+
+/* spacing like a real article */
+.postShell .postBody p{
+  margin: 0 0 1.25em;
+}
+
+/* lists match paragraph size/leading */
+.postShell .postBody li{
+  margin: 0.35em 0;
+}
+
+/* optional: make links look like the screenshot */
+.postShell .postBody a{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
