@@ -217,7 +217,7 @@ export default function Admin() {
 
   return (
     <section className="stack">
-      <h1>Admin</h1>
+      <h1>admin</h1>
 
       {user ? (
         <>
