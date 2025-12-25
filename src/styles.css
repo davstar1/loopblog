@@ -1,362 +1,976 @@
-:root{
-  --bg:#0b0f14;
-  --panel:#0f1621;
-  --text:#eaf0ff;
-  --muted:#9fb0c7;
-  --line:rgba(255,255,255,.10);
-  --shadow:0 18px 50px rgba(0,0,0,.55);
-  --radius:18px;
-  --max:1100px;
+/* News layout (USA Today-inspired) */
+.newsShell{
+  max-width: var(--max, 1100px);
+  margin: 0 auto;
+  padding: 12px 0;
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-  background: radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.06), transparent 60%),
-              radial-gradient(1000px 600px at 120% 0%, rgba(255,255,255,.04), transparent 55%),
-              var(--bg);
-  color:var(--text);
+.newsTop{
+  display:flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 6px 0 14px;
 }
 
-a{ color:inherit; text-decoration:none; }
-.container{ max-width:var(--max); margin:0 auto; padding: 22px 16px 60px; }
-.stack{ display:flex; flex-direction:column; gap:16px; }
-.footer{ border-top:1px solid var(--line); padding:18px 16px; color:var(--muted); text-align:center; }
-
-.navWrap{
-  position: sticky; top:0; z-index:50;
-  backdrop-filter: blur(10px);
-  background: rgba(11,15,20,.65);
-  border-bottom:1px solid var(--line);
+.newsH1{
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: -0.02em;
 }
-.navInner{
-  max-width:var(--max);
-  margin:0 auto;
-  padding:14px 16px;
+
+.newsCols{
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  gap: 18px;
+  align-items: start;
+}
+
+/* LEFT RAIL */
+.newsRail{
+  display: grid;
+  gap: 12px;
+}
+
+.railCard{
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  text-decoration: none;
+  color: inherit;
+}
+
+.railThumb{
+  width: 86px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+}
+
+.railThumb img{ width:100%; height:100%; object-fit: cover; display:block; }
+
+.railTitle{
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.railMeta{ font-size: 12px; margin-top: 6px; }
+
+/* MAIN */
+.newsMain{ display: grid; gap: 14px; }
+
+.heroCard{
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  text-decoration: none;
+  color: inherit;
+}
+
+.heroMedia{
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+  min-height: 260px;
+}
+
+.heroMedia img{ width:100%; height:100%; object-fit: cover; display:block; }
+
+.heroContent{ display:flex; flex-direction: column; gap: 10px; }
+
+.heroKicker{
+  font-size: 12px;
+  letter-spacing: .12em;
+  font-weight: 700;
+  opacity: .8;
+}
+
+.heroTitle{
+  font-size: 40px;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+.heroDeck{ font-size: 14px; line-height: 1.5; }
+
+.heroMeta{ margin-top: auto; }
+
+.mainList{
+  display: grid;
+  gap: 12px;
+}
+
+.mainItem{
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  text-decoration: none;
+  color: inherit;
+}
+
+.mainTitle{
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.mainDeck{ font-size: 13px; line-height: 1.5; }
+
+.mainMeta{ font-size: 12px; margin-top: 10px; }
+
+.mainThumb{
+  width: 100%;
+  height: 120px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+  align-self: start;
+}
+
+.mainThumb img{ width:100%; height:100%; object-fit: cover; display:block; }
+
+/* RIGHT SIDEBAR */
+.newsSide{
+  display: grid;
+  gap: 12px;
+  position: sticky;
+  top: 16px;
+}
+
+.sideCard{
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+}
+
+.sideTitle{
+  font-size: 16px;
+  font-weight: 850;
+  margin-bottom: 10px;
+}
+
+.sideList{ display: grid; gap: 10px; }
+
+.sideLink{
+  text-decoration: none;
+  color: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sideLink:last-child{ border-bottom: 0; padding-bottom: 0; }
+
+.sideForm{ display:flex; gap: 10px; }
+.sideInput{
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  padding: 10px 12px;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .newsCols{ grid-template-columns: 1fr; }
+  .newsSide{ position: static; }
+  .heroCard{ grid-template-columns: 1fr; }
+  .mainItem{ grid-template-columns: 1fr; }
+  .mainThumb{ height: 180px; }
+}
+/* ===== News-style top nav ===== */
+.newsNav{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: hsl(210, 17%, 98%);
+  border-bottom: 1px solid var(--line);
+}
+
+.newsNavTop{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:14px;
+  gap: 12px;
+  padding: 12px 18px;
 }
-.brand{ font-weight:800; letter-spacing:.4px; font-size:18px; }
 
-.burger{
-  width:42px; height:42px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.03);
-  display:none;
+.newsBrand{
+  display:flex;
   align-items:center;
-  justify-content:center;
-  gap:5px;
-  flex-direction:column;
+  gap: 10px;
+  color: var(--text);
+  text-decoration:none;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  font-size: 18px;
+}
+
+.newsBrand .dot{
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  background: #1e88ff; /* simple “USA Today dot” vibe */
+  display:inline-block;
+}
+
+.newsNavActions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.navUser{
+  font-size: 20px;
+  display:none;
+}
+
+.navBtn{
+  border: 1px solid var(--line);
+  background: rgba(208, 173, 173, 0.06);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 8px 12px;
   cursor:pointer;
+  text-decoration:none;
+  font-size: 14px;
 }
-.burger span{ width:18px; height:2px; background: rgba(255,255,255,.75); display:block; border-radius:2px; }
 
-.navLinks{ display:flex; gap:10px; align-items:center; }
-.navLinks a{ padding:9px 12px; border-radius:12px; color:var(--muted); }
-.navLinks a.active{ background: rgba(255,255,255,.06); color: var(--text); border:1px solid var(--line); }
+.navBtn.ghost{
+  background: transparent;
+}
 
+.newsNavCats{
+  display:flex;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  background: #0a0d12; /* top black category bar */
+  border-top: 1px solid rgba(136, 130, 130, 0.06);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* home,spotify,gallery,admin */
+.catLink{
+  color: rgba(255,255,255,.82);
+  text-decoration:none;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.catLink:hover{
+  background: rgba(255,255,255,.06);
+}
+
+.catLink.active{
+  color: #fff;
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+}
+
+/* Your existing burger button styles may already exist.
+   This just ensures it shows on small screens. */
+.burger{
+  display:inline-grid;
+  gap: 5px;
+  width: 44px;
+  height: 40px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.06);
+  cursor: pointer;
+}
+.burger span{
+  height: 2px;
+  background: rgba(255,255,255,.85);
+  border-radius: 99px;
+  display:block;
+}
+
+/* Mobile: collapse the category row into a dropdown */
 @media (max-width: 820px){
-  .burger{ display:flex; }
-  .navLinks{
-    position:absolute;
-    left:16px; right:16px;
-    top:64px;
-    display:none;
-    flex-direction:column;
-    padding:12px;
-    border-radius:16px;
-    border:1px solid var(--line);
-    background: rgba(15,22,33,.92);
-    box-shadow: var(--shadow);
-    align-items:stretch;
+  .newsNavCats{
+    display: none;
+    padding: 10px 12px 12px;
+    flex-wrap: wrap;
+    overflow: visible;
   }
-  .navLinks.open{ display:flex; }
+  .newsNavCats.open{
+    display: flex;
+  }
+  .navUser{ display:none; }
 }
 
-.card{
-  background: rgba(15,22,33,.72);
-  border:1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding:16px;
+@media (min-width: 821px){
+  .burger{ display:none; }
+  .navUser{ display:inline; }
 }
-.cardLink{ transition: transform .12s ease, background .12s ease; }
-.cardLink:hover{ transform: translateY(-2px); background: rgba(15,22,33,.86); }
+/* ===========================
+   REPAIR PACK (paste LAST)
+   Fixes: Gallery grid, Write form layout, Video lightbox
+=========================== */
 
-.hero{
-  padding:18px;
-  border-radius: var(--radius);
-  border:1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-}
-.hero h1{ margin:0 0 6px; font-size:34px; }
-.hero p{ margin:0 0 14px; color: var(--muted); max-width: 70ch; }
-.heroBtns{ display:flex; gap:10px; flex-wrap:wrap; }
-
+/* ---------- Global layout helpers (if these got broken) ---------- */
+.stack { display: grid; gap: 14px; }
 .sectionTitle{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
-.sectionTitle h2, .sectionTitle h3{ margin:0; }
-.muted{ color: var(--muted); }
+.card{ padding: 14px; }
+.grid{ display:grid; gap: 12px; }
+.row{ display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
 
-.grid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; }
-@media (max-width: 980px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-@media (max-width: 620px){ .grid{ grid-template-columns: 1fr; } }
+/* Make forms look right */
+.field{ display:grid; gap: 6px; }
+.field input,
+.field textarea{
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.field textarea{ resize: vertical; min-height: 220px; }
 
 .btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 14px; border-radius:14px;
-  border:1px solid rgba(255,255,255,.14);
+  border: 1px solid var(--line);
   background: rgba(255,255,255,.08);
   color: var(--text);
-  cursor:pointer; font-weight:650;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
 }
-.btn:disabled{ opacity:.6; cursor:not-allowed; }
-.btn.ghost{ background: transparent; border:1px solid var(--line); color: var(--muted); }
+.btn.ghost{ background: transparent; }
 
-.field{ display:flex; flex-direction:column; gap:8px; }
-.field span{ color: var(--muted); font-size: 13px; }
-input, textarea{
-  width:100%;
-  border-radius:14px;
-  border:1px solid var(--line);
-  padding:12px 12px;
-  background: rgba(255,255,255,.03);
-  color: var(--text);
-  outline:none;
+/* Center the Write page card and make it wider */
+.stack > .card.stack{
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
 }
-textarea{ resize: vertical; }
 
-.row{ display:flex; gap:10px; flex-wrap:wrap; }
-
+/* Dropzone & thumbs on Write */
 .dropzone{
-  border:1px dashed rgba(255,255,255,.18);
-  border-radius: 16px;
-  padding: 14px;
-  background: rgba(255,255,255,.02);
+  border: 1px dashed rgba(255,255,255,.22);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,.03);
 }
-
-.thumbGrid{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; margin-top:10px; }
-.thumbGrid.big{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-@media (max-width: 720px){
-  .thumbGrid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-  .thumbGrid.big{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.thumbGrid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
 }
 .thumb{
-  position:relative;
+  position: relative;
   border-radius: 14px;
-  overflow:hidden;
-  border:1px solid var(--line);
-  background: rgba(0,0,0,.25);
-  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
 }
-.thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
+.thumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display:block;
+}
 .xBtn{
-  position:absolute; right:8px; top:8px;
-  width:34px; height:34px; border-radius: 12px;
-  border:1px solid var(--line);
-  background: rgba(0,0,0,.45);
+  position:absolute;
+  top:8px;
+  right:8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(164, 154, 154, 0.35);
   color: var(--text);
   cursor:pointer;
 }
 
-.metaRow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-.chip{
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.04);
-  color: var(--muted);
-  padding:6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-}
-
-.postTitle{ margin: 0; font-size: 30px; }
-.postBody{ margin: 0; line-height: 1.65; white-space: pre-wrap; }
-
-.error{
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,100,100,.35);
-  background: rgba(255,100,100,.08);
-  color: rgba(255,220,220,.95);
-}
-
-.clamp3{
-  display:-webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow:hidden;
-}
+/* ---------- (1) Gallery grid “photos too big / not in grid” ---------- */
 .photoGrid{
   display:grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap:12px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: stretch;
 }
-@media (max-width: 980px){
-  .photoGrid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+.photoTile{
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  display:block;
 }
-@media (max-width: 620px){
-  .photoGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.photoTile img{
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;        /* makes tiles uniform */
+  object-fit: cover;
+  display:block;
+}
+
+/* ---------- (3) Lightbox nav + video/iframe behavior ---------- */
+/* Ensure nav buttons position correctly even if older CSS exists */
+.lbBody{ position: relative; }
+
+.lbBody .lbNav{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,.35);
+  color: var(--text);
+  cursor: pointer;
+  display:grid;
+  place-items:center;
+  font-size: 26px;
+}
+
+/* Correct selectors (your earlier CSS used .lbnav by mistake) */
+.lbBody .lbNav[aria-label="Previous"]{ left: 12px; }
+.lbBody .lbNav[aria-label="Next"]{ right: 12px; }
+
+/* Keep image/media from covering the nav buttons */
+.lbImg{
+  max-width: 100%;
+  max-height: 72vh;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,.35);
+  z-index: 1;
+}
+
+/* If your YouTube lightbox uses an iframe, make it behave */
+.lbBody iframe{
+  width: 100%;
+  height: min(72vh, 520px);
+  border: 0;
+  border-radius: 14px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid var(--line);
+}
+
+/* ---------- Video grid (if it got nuked) ---------- */
+.videoGrid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.videoTile{
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  border-radius: 16px;
+  overflow:hidden;
+  padding: 0;
+  cursor: pointer;
+}
+.videoThumb{
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display:block;
+}
+
+/* Mobile tuning */
+@media (max-width: 520px){
+  .photoGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* --- HARD FIX: force Gallery grid tiles to behave --- */
+.photoGrid{
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  gap: 12px !important;
 }
 
 .photoTile{
-  padding:0;
-  border:1px solid var(--line);
-  border-radius: 16px;
-  overflow:hidden;
-  background: rgba(255,255,255,.02);
-  cursor:pointer;
-  aspect-ratio: 1 / 1;
-}
-.photoTile img{
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  display:block;
-  transition: transform .15s ease;
-}
-.photoTile:hover img{
-  transform: scale(1.02);
+  display: block !important;
+  width: 100% !important;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
 }
 
-/* Lightbox */
+/* This prevents “giant images” even if global img rules exist */
+.photoTile img{
+  display: block !important;
+  width: 100% !important;
+  height: 180px !important;       /* <-- key */
+  object-fit: cover !important;
+}
+
+/* Optional: nicer feel */
+@media (max-width: 520px){
+  .photoTile img{ height: 150px !important; }
+}
+/* ===========================
+   LIGHTBOX HARD FIX (paste LAST)
+   Forces overlay + centered panel + working arrows
+=========================== */
+
 .lightbox{
-  position:fixed;
-  inset:0;
-  z-index: 999;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding: 18px;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 18px !important;
 }
+
 .lbBackdrop{
-  position:absolute;
-  inset:0;
-  border:0;
-  background: rgba(0,0,0,.65);
-  cursor:pointer;
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,.70) !important;
+  border: 0 !important;
+  cursor: pointer !important;
 }
+
 .lbPanel{
-  position:relative;
-  width:min(980px, 100%);
-  border-radius: 18px;
-  border:1px solid var(--line);
-  background: rgba(15,22,33,.92);
-  box-shadow: var(--shadow);
-  overflow:hidden;
+  position: relative !important;
+  z-index: 100000 !important;
+
+  width: min(980px, calc(100vw - 36px)) !important;
+  max-height: calc(100vh - 36px) !important;
+
+  border-radius: 18px !important;
+  overflow: hidden !important;
+
+  border: 1px solid var(--line) !important;
+  background: rgba(15,22,33,.92) !important;
+  box-shadow: var(--shadow) !important;
 }
+
 .lbTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 12px;
-  border-bottom: 1px solid var(--line);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px !important;
+  border-bottom: 1px solid var(--line) !important;
 }
-.lbBtn{
-  width:40px;
-  height:40px;
-  border-radius: 14px;
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-  cursor:pointer;
-}
+
 .lbBody{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 12px;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px !important;
 }
+
 .lbImg{
-  width: 100%;
-  max-height: 72vh;
-  object-fit: contain;
-  border-radius: 14px;
-  border:1px solid var(--line);
-  background: rgba(0,0,0,.35);
+  display: block !important;
+  max-width: 100% !important;
+  max-height: 72vh !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+
+  border-radius: 14px !important;
+  border: 1px solid var(--line) !important;
+  background: rgba(0,0,0,.35) !important;
 }
+
+/* Arrows */
 .lbNav{
-  width:46px;
-  height:46px;
-  border-radius: 16px;
-  border:1px solid var(--line);
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-  cursor:pointer;
-  font-size: 26px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 100001 !important;
+
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 16px !important;
+
+  border: 1px solid var(--line) !important;
+  background: rgba(0,0,0,.45) !important;
+  color: var(--text) !important;
+
+  cursor: pointer !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 26px !important;
 }
+
+.lbNav[aria-label="Previous"]{ left: 12px !important; }
+.lbNav[aria-label="Next"]{ right: 12px !important; }
+
 .lbHint{
-  padding: 10px 12px 14px;
-  border-top: 1px solid var(--line);
-  font-size: 13px;
+  padding: 10px 12px 14px !important;
+  border-top: 1px solid var(--line) !important;
+  font-size: 13px !important;
 }
+/* ===========================
+   VIDEOS PAGE FIX (paste LAST)
+   Fixes: video grid, play badge, iframe sizing in lightbox
+=========================== */
+
 .videoThumbGrid{
   display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap:12px;
-}
-@media (max-width: 980px){
-  .videoThumbGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-@media (max-width: 620px){
-  .videoThumbGrid{ grid-template-columns: 1fr; }
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 }
 
 .videoTile{
-  position:relative;
-  padding:0;
-  border:1px solid var(--line);
-  border-radius: 18px;
+  position: relative;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  border-radius: 16px;
   overflow:hidden;
-  background: rgba(255,255,255,.02);
-  cursor:pointer;
-  aspect-ratio: 16 / 9;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  display:block;
 }
+
 .videoTile img{
-  width:100%;
-  height:100%;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   display:block;
-  transform: scale(1.001);
-  transition: transform .15s ease;
 }
-.videoTile:hover img{
-  transform: scale(1.03);
-}
+
+/* play icon */
 .playBadge{
   position:absolute;
-  inset:auto;
-  left:50%;
-  top:50%;
-  transform: translate(-50%, -50%);
-  width:64px;
-  height:64px;
-  border-radius: 999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size: 24px;
-  border:1px solid var(--line);
+  left: 12px;
+  bottom: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  font-size: 18px;
+  border: 1px solid var(--line);
   background: rgba(0,0,0,.45);
   color: var(--text);
 }
 
+/* Lightbox video wrapper */
 .lbVideo{
   width: 100%;
-  max-width: 820px;
+  max-width: 900px;
 }
 
-.videoGrid{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; }
-@media (max-width: 820px){ .videoGrid{ grid-template-columns: 1fr; } }
-.videoCard{ border-radius: var(--radius); border:1px solid var(--line); overflow:hidden; background: rgba(255,255,255,.02); }
+/* responsive 16:9 iframe wrapper */
+.ratio{
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: 14px;
+  overflow:hidden;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,.35);
+}
 
-.ratio{ position:relative; width:100%; aspect-ratio: 16 / 9; }
-.ratio.spotify{ aspect-ratio: 16 / 6; min-height: 360px; }
-.ratio iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.ratio iframe{
+  position:absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display:block;
+}
+
+/* Make sure arrows are always clickable above iframe */
+.lbBody{ position: relative !important; }
+.lbNav{ z-index: 100001 !important; }
+.lbPanel{ z-index: 100000 !important; }
+/* ===========================
+   WRITE PAGE INPUT CONTRAST (paste LAST)
+=========================== */
+
+/* Make inputs clearly visible on dark backgrounds */
+.field input,
+.field textarea{
+  background: rgba(0,0,0,.35) !important;     /* darker fill */
+  border: 1px solid rgba(255,255,255,.18) !important;
+  color: var(--text) !important;
+}
+
+/* Placeholder contrast */
+.field input::placeholder,
+.field textarea::placeholder{
+  color: rgba(255,255,255,.55) !important;
+}
+
+/* Focus state (easy to see) */
+.field input:focus,
+.field textarea:focus{
+  outline: none !important;
+  border-color: rgba(255,255,255,.35) !important;
+  box-shadow: 0 0 0 3px rgba(0, 160, 255, .25) !important;
+}
+
+/* Optional: labels pop a bit more */
+.field > span{
+  color: rgba(255,255,255,.82);
+  font-weight: 600;
+}
+/* Admin page title centered */
+section.stack > h1{
+  text-align: center;
+  margin: 6px 0 12px;
+}
+/* Footer centered */
+.footer{
+  text-align: center;
+  width: 100%;
+}
+/* =========================================================
+   HOME — Video gallery under news articles (grid + lightbox)
+   Added for <VideoGallery /> on Home.tsx
+   (Scoped so it won't mess with existing Videos/Gallery pages)
+========================================================= */
+
+/* Section wrapper (sits under .mainList in .newsMain) */
+.homeVideoSection{
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.homeVideoTop{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.homeVideoH2{
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: .02em;
+}
+
+.homeVideoSub{
+  font-size: .9rem;
+}
+
+/* Grid — scoped to Home only */
+.homeVideoSection .videoGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 980px){
+  .homeVideoSection .videoGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px){
+  .homeVideoSection .videoGrid{ grid-template-columns: 1fr; }
+}
+
+/* Tiles — scoped to Home only */
+.homeVideoSection .videoTile{
+  position: relative;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  border-radius: 16px;
+  overflow:hidden;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  display:block;
+}
+
+.homeVideoSection .videoThumb{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+}
+
+.homeVideoSection .videoThumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display:block;
+}
+
+/* Play badge */
+.homeVideoSection .videoPlay{
+  position:absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  font-size: 18px;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,.45);
+  color: var(--text);
+}
+
+/* =========================================================
+   Home video lightbox (supports a structure where .lbBackdrop
+   IS the overlay container: <div class="lbBackdrop" role="dialog" ...>)
+   This coexists with your existing .lightbox-based rules.
+========================================================= */
+
+.lbBackdrop[role="dialog"][aria-modal="true"]{
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  padding: 18px !important;
+  background: rgba(0,0,0,.72) !important;
+}
+
+.lbBackdrop[role="dialog"][aria-modal="true"] .lbPanel{
+  position: relative !important;
+  z-index: 100000 !important;
+
+  width: min(980px, calc(100vw - 36px)) !important;
+  max-height: calc(100vh - 36px) !important;
+
+  border-radius: 18px !important;
+  overflow: hidden !important;
+
+  border: 1px solid var(--line) !important;
+  background: rgba(15,22,33,.92) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.lbBackdrop[role="dialog"][aria-modal="true"] .lbClose{
+  position:absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--line) !important;
+  background: rgba(0,0,0,.35) !important;
+  color: var(--text) !important;
+  cursor: pointer !important;
+  z-index: 100001 !important;
+}
+
+.lbBackdrop[role="dialog"][aria-modal="true"] .lbFrame{
+  aspect-ratio: 16 / 9 !important;
+  width: 100% !important;
+  background: #000 !important;
+}
+
+.lbBackdrop[role="dialog"][aria-modal="true"] .lbFrame iframe{
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display:block !important;
+}
+
+.lbBackdrop[role="dialog"][aria-modal="true"] .lbHint{
+  padding: 10px 12px 14px !important;
+  border-top: 1px solid var(--line) !important;
+  font-size: 13px !important;
+}
+/* =========================
+   NAV FONT + STYLE (Top category links)
+========================= */
+:root{
+  /* Pick one */
+  --navFont: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  /* --navFont: "Oswald", Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; */
+  /* --navFont: "Montserrat", Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; */
+}
+
+.newsNavCats .catLink{
+  font-family: var(--navFont);
+  font-weight: 800;        /* 700–900 */
+  font-size: 13px;
+  letter-spacing: .06em;   /* USA Today-ish tracking */
+  text-transform: uppercase;
+}
+
+/* Active state stays readable */
+.newsNavCats .catLink.active{
+  font-weight: 900;
+}
+
+/* Optional: brand (LoopBlog) to match */
+.newsBrand{
+  font-family: var(--navFont);
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+/* Optional: top-right buttons (Log in / Log out) */
+.navBtn{
+  font-family: var(--navFont);
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+/* =========================
+   ARTICLE TITLES FONT (only)
+========================= */
+:root{
+  --titleFont: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.heroTitle,
+.mainTitle,
+.railTitle,
+.sideTitle{
+  font-family: var(--titleFont);
+  font-weight: 900;          /* tweak 700–900 */
+  letter-spacing: -0.01em;   /* tighter = more “news” */
+}
+
+/* optional: sidebar headline links too */
+.sideLink{
+  font-family: var(--titleFont);
+  font-weight: 750;
+}
+/* Post page title uses same font as nav/article titles */
+.postShell .postTitle{
+  font-family: var(--navFont, Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}/* caption for youtube videos */
+.videoCaption{
+  padding: 10px 12px;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.25;
+  border-top: 1px solid var(--line);
+  background: rgba(0,0,0,.18);
+}

@@ -55,6 +55,7 @@ export default function Write() {
       return copy;
     });
   }
+
   function prettyError(e: any) {
     const msg = e?.message || String(e);
 
@@ -70,7 +71,6 @@ export default function Write() {
     if (e?.status === 413 || msg.toLowerCase().includes("payload too large")) {
       return "Image is too large. Try a smaller image or compress it before uploading.";
     }
-
     return msg;
   }
 
@@ -91,23 +91,39 @@ export default function Write() {
     try {
       const slug = slugify(cleanTitle) || `post-${Date.now()}`;
 
-      const willUploadCover = pending.length > 0;
-      const steps = (willUploadCover ? 1 : 0) + 1;
+      // We upload ALL images to "posts/".
+      // The first image also becomes cover_path in "covers/" (optional).
+      const hasImages = pending.length > 0;
+
+      const steps = (hasImages ? pending.length : 0) + (hasImages ? 1 : 0) + 1;
+      // upload N images to posts/  + upload cover (1) + insert post (1)
       setTotalSteps(steps);
 
-      // Step 1: upload cover (optional)
+      // 1) Upload cover (optional)
       let cover_path: string | null = null;
-      if (willUploadCover) {
-        setStage("Uploading cover image…");
-        setStep(1);
+      let currentStep = 0;
 
-        const uploaded = await uploadBlogImage(pending[0].file, "covers");
-        cover_path = uploaded.path;
+      if (hasImages) {
+        setStage("Uploading cover image…");
+        setStep(++currentStep);
+        const coverUploaded = await uploadBlogImage(pending[0].file, "covers");
+        cover_path = coverUploaded.path;
       }
 
-      // Step 2: insert post
+      // 2) Upload all images
+      const image_paths: string[] = [];
+      if (hasImages) {
+        for (let i = 0; i < pending.length; i++) {
+          setStage(`Uploading image ${i + 1} of ${pending.length}…`);
+          setStep(++currentStep);
+          const uploaded = await uploadBlogImage(pending[i].file, "posts");
+          image_paths.push(uploaded.path);
+        }
+      }
+
+      // 3) Insert post
       setStage("Saving post to Supabase…");
-      setStep(steps);
+      setStep(++currentStep);
 
       const created = await addPost({
         title: cleanTitle,
@@ -115,6 +131,7 @@ export default function Write() {
         excerpt: cleanExcerpt || null,
         body_md: cleanBody,
         cover_path,
+        image_paths,
         status: "published",
       });
 
@@ -125,7 +142,6 @@ export default function Write() {
       nav(`/post/${created.id}`);
     } catch (e: any) {
       console.error(e);
-
       const rawMsg = e?.message ?? "";
       if (rawMsg.includes("posts_slug_key")) {
         setErr(
@@ -134,7 +150,6 @@ export default function Write() {
       } else {
         setErr(prettyError(e));
       }
-
       setStage(null);
     } finally {
       setSaving(false);
@@ -190,7 +205,7 @@ export default function Write() {
         </label>
 
         <div className="field">
-          <span>Cover Image (optional)</span>
+          <span>Images (optional)</span>
           <div className="dropzone">
             <input
               type="file"
@@ -199,7 +214,7 @@ export default function Write() {
               onChange={(e) => onPickFiles(e.target.files)}
             />
             <p className="muted">
-              Pick up to 12 images. The first becomes the cover.
+              Pick up to 12 images. First becomes the cover.
             </p>
           </div>
 

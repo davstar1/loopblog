@@ -3,7 +3,6 @@ import Navbar from "./components/NavBar";
 import Home from "./pages/Home";
 import Write from "./pages/Write";
 import Post from "./pages/Post";
-import Videos from "./pages/Videos";
 import Playlist from "./pages/Playlist";
 import Gallery from "./pages/Gallery";
 import Admin from "./pages/Admin";
@@ -26,7 +25,6 @@ export default function App() {
           />
 
           <Route path="/post/:id" element={<Post />} />
-          <Route path="/videos" element={<Videos />} />
           <Route path="/playlist" element={<Playlist />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/gallery" element={<Gallery />} />
