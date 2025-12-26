@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { loadPosts, type PostRow } from "../lib/posts";
 import type { User } from "@supabase/supabase-js";
 
 type YoutubeRow = {
@@ -75,6 +76,11 @@ export default function Admin() {
   const [ytInput, setYtInput] = useState("");
   const [ytTitle, setYtTitle] = useState("");
 
+  // --- Post manager state (Admin-only UI) ---
+  const [posts, setPosts] = useState<PostRow[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postQuery, setPostQuery] = useState("");
+
   useEffect(() => {
     let alive = true;
 
@@ -143,13 +149,42 @@ export default function Admin() {
     }
   }
 
+  async function refreshPosts() {
+    setPostsLoading(true);
+    try {
+      const rows = await loadPosts();
+      setPosts(Array.isArray(rows) ? rows : []);
+    } catch (e: any) {
+      setMsg(e?.message ?? "Failed to load posts.");
+      setPosts([]);
+    } finally {
+      setPostsLoading(false);
+    }
+  }
+
   useEffect(() => {
-    if (user) refreshVideos();
-    else setVideos([]);
+    if (user) {
+      refreshVideos();
+      refreshPosts();
+    } else {
+      setVideos([]);
+      setPosts([]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const videoCount = useMemo(() => videos.length, [videos]);
+  const postCount = useMemo(() => posts.length, [posts]);
+
+  const filteredPosts = useMemo(() => {
+    const q = postQuery.trim().toLowerCase();
+    if (!q) return posts;
+    return posts.filter((p: any) => {
+      const t = String(p?.title ?? "").toLowerCase();
+      const ex = String(p?.excerpt ?? "").toLowerCase();
+      return t.includes(q) || ex.includes(q);
+    });
+  }, [posts, postQuery]);
 
   async function addVideo() {
     setMsg(null);
@@ -197,6 +232,7 @@ export default function Admin() {
         .from("youtube_videos")
         .delete()
         .eq("id", row.id);
+
       if (error) throw error;
 
       setMsg("Video removed ✅");
@@ -208,7 +244,7 @@ export default function Admin() {
 
   if (checking) {
     return (
-      <section className="stack">
+      <section className="stack" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
         <h1>Admin</h1>
         <div className="card">Checking session…</div>
       </section>
@@ -216,124 +252,174 @@ export default function Admin() {
   }
 
   return (
-    <section className="stack">
+    <section className="stack" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
       <h1>admin</h1>
 
       {user ? (
         <>
-          <div
-            className="card stack"
-            style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}
-          >
-            <div className="muted" style={{ textAlign: "center" }}>
-              You’re logged in as:
-            </div>
-            <div style={{ fontWeight: 800, textAlign: "center" }}>
-              {user.email}
-            </div>
+          <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
+            <div style={{ textAlign: "center", opacity: 0.9 }}>You’re logged in as:</div>
+            <div style={{ fontWeight: 800, textAlign: "center" }}>{user.email}</div>
 
             <div className="row" style={{ justifyContent: "center" }}>
-              <button
-                className="btn"
-                type="button"
-                onClick={() => nav("/write")}
-              >
-                Go to Write
+              <button className="btn" type="button" onClick={() => nav("/write")}>
+                New Post
               </button>
-              <button
-                className="btn ghost"
-                type="button"
-                onClick={logout}
-                disabled={busy}
-              >
+              <button className="btn ghost" type="button" onClick={logout} disabled={busy}>
                 {busy ? "Signing out…" : "Log out"}
               </button>
             </div>
 
             {msg && (
-              <div
-                className={msg.toLowerCase().includes("✅") ? "muted" : "error"}
-                style={{ textAlign: "center", width: "100%" }}
-              >
+              <div style={{ textAlign: "center", width: "100%", color: msg.toLowerCase().includes("✅") ? "inherit" : "tomato" }}>
                 {msg}
               </div>
             )}
           </div>
 
-          {/* ✅ YouTube Manager (Admin-only) */}
-          <div
-            className="card stack"
-            style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}
-          >
+          {/* Posts manager */}
+          <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
             <div className="sectionTitle">
-              <h3 style={{ margin: 0 }}>YouTube Gallery Manager</h3>
-              <span className="muted">{videoCount} videos</span>
+              <h3 style={{ margin: 0 }}>Posts</h3>
+              <span style={{ opacity: 0.85 }}>{postCount} total</span>
             </div>
 
-            <div className="row">
+            <div className="row" style={{ flexWrap: "wrap" }}>
+              <input
+                className="sideInput"
+                placeholder="Search posts…"
+                value={postQuery}
+                onChange={(e) => setPostQuery(e.target.value)}
+                style={{ flex: 1, minWidth: 220 }}
+              />
+              <button className="btn ghost" type="button" onClick={refreshPosts} disabled={postsLoading}>
+                {postsLoading ? "Refreshing…" : "Refresh"}
+              </button>
+            </div>
+
+            {postsLoading ? (
+              <div style={{ opacity: 0.85 }}>Loading posts…</div>
+            ) : filteredPosts.length === 0 ? (
+              <div style={{ opacity: 0.85 }}>No posts match.</div>
+            ) : (
+              <div style={{ display: "grid", gap: 10 }}>
+                {filteredPosts.map((p: any) => {
+                  const when = new Date(p.published_at ?? p.created_at).toLocaleString();
+                  return (
+                    <div
+                      key={p.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 1fr) auto",
+                        gap: 12,
+                        alignItems: "center",
+                        border: "1px solid var(--line)",
+                        borderRadius: 14,
+                        padding: 12,
+                        background: "rgba(255,255,255,.03)",
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {p.title}
+                        </div>
+                        <div style={{ opacity: 0.85, fontSize: 12, marginTop: 4 }}>{when}</div>
+                        {p.status && (
+                          <div style={{ opacity: 0.85, fontSize: 12, marginTop: 4 }}>status: {p.status}</div>
+                        )}
+                      </div>
+
+                      <div className="row" style={{ justifyContent: "flex-end" }}>
+                        <Link className="btn ghost" to={`/post/${p.id}`}>
+                          View
+                        </Link>
+                        <Link className="btn" to={`/edit/${p.id}`}>
+                          Edit
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* YouTube manager */}
+          <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
+            <div className="sectionTitle">
+              <h3 style={{ margin: 0 }}>YouTube Gallery Manager</h3>
+              <span style={{ opacity: 0.85 }}>{videoCount} videos</span>
+            </div>
+
+            <div className="row" style={{ flexWrap: "wrap" }}>
               <input
                 className="sideInput"
                 placeholder="Paste YouTube URL or 11-char ID…"
                 value={ytInput}
                 onChange={(e) => setYtInput(e.target.value)}
+                style={{ minWidth: 220, flex: 1 }}
               />
-              <button
-                className="btn"
-                type="button"
-                onClick={addVideo}
-                disabled={videosLoading}
-              >
+              <button className="btn" type="button" onClick={addVideo} disabled={videosLoading}>
                 Add
               </button>
-              <button
-                className="btn ghost"
-                type="button"
-                onClick={refreshVideos}
-                disabled={videosLoading}
-              >
+              <button className="btn ghost" type="button" onClick={refreshVideos} disabled={videosLoading}>
                 Refresh
               </button>
             </div>
 
-            <div className="row">
+            <div className="row" style={{ flexWrap: "wrap" }}>
               <input
                 className="sideInput"
                 placeholder="Optional title (shows in list)…"
                 value={ytTitle}
                 onChange={(e) => setYtTitle(e.target.value)}
+                style={{ minWidth: 220, flex: 1 }}
               />
             </div>
 
             {videosLoading ? (
-              <div className="muted">Loading videos…</div>
+              <div style={{ opacity: 0.85 }}>Loading videos…</div>
             ) : videos.length === 0 ? (
-              <div className="muted">No videos yet. Add one above.</div>
+              <div style={{ opacity: 0.85 }}>No videos yet. Add one above.</div>
             ) : (
               <div style={{ display: "grid", gap: 10 }}>
                 {videos.map((v) => (
-                  <div key={v.id} className="ytRow">
+                  <div
+                    key={v.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "140px minmax(0, 1fr) auto",
+                      gap: 12,
+                      alignItems: "center",
+                      border: "1px solid var(--line)",
+                      borderRadius: 14,
+                      overflow: "hidden",
+                      background: "rgba(255,255,255,.03)",
+                    }}
+                  >
                     <img
-                      className="ytRowThumb"
                       src={ytThumb(v.youtube_id)}
-                      alt={v.title ? v.title : v.youtube_id}
+                      alt={v.title ?? v.youtube_id}
+                      style={{
+                        width: "140px",
+                        height: "80px",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
                       loading="lazy"
                     />
 
-                    <div className="ytRowMeta">
-                      <div className="ytRowTitle">
+                    <div style={{ padding: "10px 0", minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {v.title ? v.title : v.youtube_id}
                       </div>
-                      <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                      <div style={{ opacity: 0.85, fontSize: 12, marginTop: 4 }}>
                         Added: {new Date(v.created_at).toLocaleString()}
                       </div>
                     </div>
 
-                    <div className="ytRowActions">
-                      <button
-                        className="btn ghost"
-                        type="button"
-                        onClick={() => removeVideo(v)}
-                      >
+                    <div style={{ padding: "0 12px 0 0" }}>
+                      <button className="btn ghost" type="button" onClick={() => removeVideo(v)}>
                         Remove
                       </button>
                     </div>
@@ -344,11 +430,7 @@ export default function Admin() {
           </div>
         </>
       ) : (
-        <form
-          className="card stack"
-          style={{ maxWidth: 520, margin: "0 auto" }}
-          onSubmit={login}
-        >
+        <form className="card stack" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }} onSubmit={login}>
           <label className="field">
             <span>Email</span>
             <input
@@ -370,20 +452,16 @@ export default function Admin() {
             />
           </label>
 
-          <div className="row">
+          <div className="row" style={{ flexWrap: "wrap" }}>
             <button className="btn" type="submit" disabled={busy}>
               {busy ? "Logging in…" : "Log in"}
             </button>
-            <button
-              className="btn ghost"
-              type="button"
-              onClick={() => nav("/")}
-            >
+            <button className="btn ghost" type="button" onClick={() => nav("/")}>
               Cancel
             </button>
           </div>
 
-          {msg && <div className="error">{msg}</div>}
+          {msg && <div style={{ color: "tomato" }}>{msg}</div>}
         </form>
       )}
     </section>

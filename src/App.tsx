@@ -7,6 +7,7 @@ import Playlist from "./pages/Playlist";
 import Gallery from "./pages/Gallery";
 import Admin from "./pages/Admin";
 import RequireAuth from "./components/RequireAuth";
+import EditPost from "./pages/EditPost";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/edit/:id" element={<EditPost />} />
         </Routes>
       </main>
       <footer className="footer">© {new Date().getFullYear()} LoopBlog</footer>
