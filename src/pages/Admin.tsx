@@ -311,44 +311,24 @@ export default function Admin() {
             ) : (
               <div style={{ display: "grid", gap: 10 }}>
                 {videos.map((v) => (
-                  <div
-                    key={v.id}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "140px 1fr auto",
-                      gap: 12,
-                      alignItems: "center",
-                      border: "1px solid var(--line)",
-                      borderRadius: 14,
-                      overflow: "hidden",
-                      background: "rgba(255,255,255,.03)",
-                    }}
-                  >
+                  <div key={v.id} className="ytRow">
                     <img
+                      className="ytRowThumb"
                       src={ytThumb(v.youtube_id)}
-                      alt={v.title ?? v.youtube_id}
-                      style={{
-                        width: "140px",
-                        height: "80px",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
+                      alt={v.title ? v.title : v.youtube_id}
                       loading="lazy"
                     />
 
-                    <div style={{ padding: "10px 0" }}>
-                      <div style={{ fontWeight: 800 }}>
+                    <div className="ytRowMeta">
+                      <div className="ytRowTitle">
                         {v.title ? v.title : v.youtube_id}
                       </div>
-                      <div
-                        className="muted"
-                        style={{ fontSize: 12, marginTop: 4 }}
-                      >
+                      <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
                         Added: {new Date(v.created_at).toLocaleString()}
                       </div>
                     </div>
 
-                    <div style={{ paddingRight: 12 }}>
+                    <div className="ytRowActions">
                       <button
                         className="btn ghost"
                         type="button"
