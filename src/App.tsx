@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./components/NavBar";
+import AppLayout from "./components/layout/AppLayout";
+
 import Home from "./pages/Home";
 import Write from "./pages/Write";
 import Post from "./pages/Post";
@@ -11,29 +12,35 @@ import EditPost from "./pages/EditPost";
 
 export default function App() {
   return (
-    <div className="app">
-      <Navbar />
-      <main className="container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/write"
-            element={
-              <RequireAuth>
-                <Write />
-              </RequireAuth>
-            }
-          />
+    <AppLayout>
+      <Routes>
+        <Route path="/" element={<Home />} />
 
-          <Route path="/post/:id" element={<Post />} />
-          <Route path="/playlist" element={<Playlist />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/edit/:id" element={<EditPost />} />
-        </Routes>
-      </main>
-      <footer className="footer">© {new Date().getFullYear()} LoopBlog</footer>
-    </div>
+        <Route
+          path="/write"
+          element={
+            <RequireAuth>
+              <Write />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/edit/:id"
+          element={
+            <RequireAuth>
+              <EditPost />
+            </RequireAuth>
+          }
+        />
+
+        <Route path="/post/:id" element={<Post />} />
+        <Route path="/playlist" element={<Playlist />} />
+        <Route path="/gallery" element={<Gallery />} />
+        <Route path="/admin" element={<Admin />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AppLayout>
   );
 }
