@@ -213,7 +213,7 @@
   gap: 12px;
   padding: 12px 18px;
 }
-
+/* controls the loopblog logo top left side */
 .newsBrand{
   display:flex;
   align-items:center;
@@ -226,8 +226,8 @@
 }
 
 .newsBrand .dot{
-  width: 27px;
-  height: 27px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   background: #1e88ff; /* simple “USA Today dot” vibe */
   display:inline-block;
@@ -860,8 +860,8 @@ section.stack > h1{
   position: relative !important;
   z-index: 100000 !important;
 
-  width: min(980px, calc(100vw - 36px)) !important;
-  max-height: calc(100vh - 36px) !important;
+  width: min(980px, calc(100vw - 16px)) !important;
+  max-height: calc(100vh - 16px) !important;
 
   border-radius: 18px !important;
   overflow: hidden !important;
@@ -1000,3 +1000,227 @@ section.stack > h1{
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* ===== NAVBAR: full width across page ===== */
+.newsNav{
+  width: 100%;
+  left: 0;
+  right: 0;
+}
+
+/* If you previously set max-width on .newsNav, undo it */
+.newsNav{ max-width: none; }
+
+/* ===== Make it thinner vertically ===== */
+
+/* top row (brand + actions) */
+.newsNavTop{
+  padding: 8px 12px;   /* was likely bigger */
+}
+
+/* category row (Home/Write/Spotify/...) */
+.newsNavCats{
+  padding: 6px 12px;   /* thinner bar */
+  gap: 6px;            /* slightly tighter spacing */
+}
+
+/* make the pills a bit thinner too */
+.newsNavCats .catLink{
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1;
+}
+/* This controls the width of the navbar across the page */
+.newsNavTop,
+.newsNavCats{
+  max-width: 2000px;
+  margin: 0 auto;
+}
+/* =========================
+   RESPONSIVE: Admin + Post pages
+========================= */
+
+/* General: prevent horizontal overflow on mobile */
+html, body{
+  overflow-x: hidden;
+}
+
+/* ---------- POST PAGE ---------- */
+@media (max-width: 900px){
+  /* make the post card fit the screen nicely */
+  .postShell .postCard{
+    width: calc(100% - 20px);
+    margin: 0 auto;
+    padding: 14px;
+  }
+
+  /* collapse the post layout to one column */
+  .postShell .postWrap{
+    grid-template-columns: 1fr !important; /* overrides inline grid columns */
+  }
+
+  /* cover image becomes full width on mobile */
+  .postShell .postSide{
+    order: -1; /* move image above text (remove if you want below) */
+  }
+
+  .postShell .postSide img{
+    transform: none !important;         /* overrides your inline scale */
+    transform-origin: center !important;
+  }
+
+  /* reading column: use full width */
+  .postShell .postMain{
+    max-width: 100%;
+  }
+
+  /* make images grid breathe */
+  .postShell .postImageGrid{
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  }
+
+  /* lightbox panel fits screen */
+  .lbPanel{
+    width: calc(100% - 24px);
+    max-width: 720px;
+  }
+}
+
+/* Smaller phones */
+@media (max-width: 520px){
+  .postShell .postBody{
+    font-size: 18px;   /* keep readable but not huge */
+    line-height: 1.75;
+  }
+}
+
+/* ---------- ADMIN PAGE ---------- */
+@media (max-width: 900px){
+  /* make admin card(s) fill screen */
+  .stack > .card{
+    width: calc(100% - 20px);
+    margin: 0 auto;
+  }
+
+  /* forms: let inputs stretch */
+  .field input{
+    width: 100%;
+  }
+
+  /* any row of buttons/inputs wraps on mobile */
+  .row{
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* make buttons easier to tap */
+  .btn{
+    min-height: 44px;
+  }
+}
+
+/* Very small screens: stack buttons full-width */
+@media (max-width: 520px){
+  .row .btn{
+    width: 100%;
+  }
+}
+/* ===========================
+   VIDEO LIGHTBOX (Home.tsx)
+   Goal: modal panel hugs the video size
+=========================== */
+
+/* full-screen dim backdrop */
+.lbBackdrop{
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;              /* space around the modal */
+}
+
+/* panel wraps the frame (not full window) */
+.lbPanel{
+  position: relative;
+  width: auto;                 /* important: don't stretch */
+  max-width: 92vw;
+  background: transparent;      /* remove big panel feel */
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* the video size (this is the "same size as video") */
+.lbFrame{
+  width: min(860px, 92vw);      /* choose your max size */
+  aspect-ratio: 16 / 9;         /* keeps perfect video shape */
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 18px 60px rgba(0,0,0,.65);
+}
+
+/* iframe ALWAYS fills the frame */
+.lbFrame iframe{
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* close button */
+.lbClose{
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.7);
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+/* left/right arrow buttons */
+.lbNav{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.55);
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.lbNav.left{ left: -54px; }
+.lbNav.right{ right: -54px; }
+
+/* on small screens, keep arrows inside the frame edge */
+@media (max-width: 720px){
+  .lbNav.left{ left: 10px; }
+  .lbNav.right{ right: 10px; }
+}
+
+/* hint row under the video */
+.lbHint{
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: .85;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+  

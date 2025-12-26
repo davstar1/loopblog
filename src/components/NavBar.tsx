@@ -2,6 +2,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+// ✅ add this import (make sure the file exists at src/assets/loopdot.png)
+import loopLogo from "../assets/loopdot.png";
+
 type AuthState = {
   loading: boolean;
   authed: boolean;
@@ -65,7 +68,20 @@ export default function Navbar() {
     <header className="newsNav">
       <div className="newsNavTop">
         <NavLink to="/" className="newsBrand" onClick={() => setOpen(false)}>
-          <span className="dot" aria-hidden="true" />
+          {/* ✅ Logo replaces the old blue dot */}
+          <img
+            src={loopLogo}
+            alt=""
+            aria-hidden="true"
+            className="navLogo"
+            style={{
+              width: 65,
+              height: 65,
+              display: "block",
+              objectFit: "contain",
+              borderRadius: 999,
+            }}
+          />
           <span>LoopBlog</span>
         </NavLink>
 
