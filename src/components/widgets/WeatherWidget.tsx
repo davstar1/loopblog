@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Props = {
-  defaultPlace?: string; // e.g. "Sarasota, FL"
+  label?: string;
+  lat?: number;
+  lon?: number;
 };
 
-type Geo = {
-  name: string;
-  admin1?: string;
-  country?: string;
-  latitude: number;
-  longitude: number;
+type CurrentWeather = {
+  temperature?: number;
+  windspeed?: number;
+  weathercode?: number;
+  time?: string;
 };
 
 function wxCodeToText(code: number) {
@@ -38,18 +39,10 @@ function wxCodeToIcon(code: number) {
 }
 
 export default function WeatherWidget({
-  defaultPlace = "Sarasota, FL",
+  label = "Sarasota, FL",
+  lat = 27.3364,
+  lon = -82.5307,
 }: Props) {
-  const [place, setPlace] = useState(() => {
-    try {
-      return localStorage.getItem("loopblog:wxPlace") || defaultPlace;
-    } catch {
-      return defaultPlace;
-    }
-  });
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(place);
-
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [tempF, setTempF] = useState<number | null>(null);
@@ -66,51 +59,47 @@ export default function WeatherWidget({
     [code]
   );
 
-  async function fetchWeather(p: string) {
+  async function load() {
     setLoading(true);
     setErr(null);
-
     try {
-      const geoRes = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-          p
-        )}&count=1&language=en&format=json`
-      );
-      const geoJson = await geoRes.json();
-      const g: Geo | undefined = geoJson?.results?.[0];
-      if (!g) throw new Error("Location not found");
+      const url =
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+        `&current_weather=true&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
 
-      const wxRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${g.latitude}&longitude=${g.longitude}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
-      );
-      const wxJson = await wxRes.json();
-      const cur = wxJson?.current;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      setTempF(
-        typeof cur?.temperature_2m === "number" ? cur.temperature_2m : null
-      );
-      setWindMph(
-        typeof cur?.wind_speed_10m === "number" ? cur.wind_speed_10m : null
-      );
-      setCode(typeof cur?.weather_code === "number" ? cur.weather_code : null);
-      setUpdated(cur?.time ? new Date(cur.time).toLocaleString() : null);
+      const data = await res.json();
+      const cur: CurrentWeather | undefined = data?.current_weather;
+      if (!cur) throw new Error("No current_weather in response");
 
-      const label = [g.name, g.admin1, g.country].filter(Boolean).join(", ");
-      setPlace(label);
-      try {
-        localStorage.setItem("loopblog:wxPlace", label);
-      } catch {}
+      if (typeof cur.temperature !== "number")
+        throw new Error("Missing temperature");
+      if (typeof cur.weathercode !== "number")
+        throw new Error("Missing weathercode");
+
+      setTempF(cur.temperature);
+      setWindMph(typeof cur.windspeed === "number" ? cur.windspeed : null);
+      setCode(cur.weathercode);
+      setUpdated(cur.time ? new Date(cur.time).toLocaleString() : null);
     } catch (e: any) {
       setErr(e?.message ?? "Weather failed");
+      setTempF(null);
+      setWindMph(null);
+      setCode(null);
+      setUpdated(null);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchWeather(place);
+    load();
+    const id = window.setInterval(load, 15 * 60 * 1000);
+    return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lat, lon]);
 
   return (
     <div className="sideCard">
@@ -119,59 +108,23 @@ export default function WeatherWidget({
         <button
           className="wxBtn"
           type="button"
-          onClick={() => fetchWeather(place)}
+          onClick={load}
           aria-label="Refresh"
         >
           ↻
         </button>
       </div>
 
-      <button
-        type="button"
-        className="wxPlace"
-        onClick={() => {
-          setDraft(place);
-          setEditing((v) => !v);
-        }}
-        title="Change location"
-      >
-        {place}
-      </button>
-
-      {editing && (
-        <div className="wxEdit">
-          <input
-            className="wxInput"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="City, State"
-          />
-          <div className="wxEditActions">
-            <button
-              className="wxBtnPill ghost"
-              type="button"
-              onClick={() => setEditing(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="wxBtnPill"
-              type="button"
-              onClick={() => {
-                setEditing(false);
-                fetchWeather(draft);
-              }}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="wxPlace" style={{ cursor: "default" }}>
+        {label}
+      </div>
 
       {loading ? (
         <div className="muted wxLoading">Loading…</div>
       ) : err ? (
-        <div className="error">{err}</div>
+        <div className="error" style={{ fontSize: 12, lineHeight: 1.35 }}>
+          Weather error: {err}
+        </div>
       ) : (
         <div className="wxBody">
           <div className="wxMain">
