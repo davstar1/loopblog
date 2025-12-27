@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Props = {
-  label?: string;
-  lat?: number;
-  lon?: number;
+  defaultLabel?: string; // e.g. "Sarasota, FL"
+  defaultLat?: number;
+  defaultLon?: number;
+};
+
+type GeoResult = {
+  name: string;
+  admin1?: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
 };
 
 type CurrentWeather = {
@@ -38,13 +46,38 @@ function wxCodeToIcon(code: number) {
   return "🌡️";
 }
 
+async function fetchJson(url: string, ms = 12000) {
+  const ctrl = new AbortController();
+  const t = window.setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } finally {
+    window.clearTimeout(t);
+  }
+}
+
+const LS_KEY = "loopblog:weatherLocation";
+
+type StoredLoc = { label: string; lat: number; lon: number };
+
 export default function WeatherWidget({
-  label = "Sarasota, FL",
-  lat = 27.3364,
-  lon = -82.5307,
+  defaultLabel = "Sarasota, FL",
+  defaultLat = 27.3364,
+  defaultLon = -82.5307,
 }: Props) {
+  const [label, setLabel] = useState(defaultLabel);
+  const [lat, setLat] = useState(defaultLat);
+  const [lon, setLon] = useState(defaultLon);
+
+  const [editing, setEditing] = useState(false);
+  const [query, setQuery] = useState("");
+
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
   const [tempF, setTempF] = useState<number | null>(null);
   const [windMph, setWindMph] = useState<number | null>(null);
   const [code, setCode] = useState<number | null>(null);
@@ -59,18 +92,37 @@ export default function WeatherWidget({
     [code]
   );
 
-  async function load() {
+  // Load saved location once
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as StoredLoc;
+      if (
+        parsed &&
+        typeof parsed.lat === "number" &&
+        typeof parsed.lon === "number" &&
+        typeof parsed.label === "string"
+      ) {
+        setLabel(parsed.label);
+        setLat(parsed.lat);
+        setLon(parsed.lon);
+      }
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function loadWeather(useLat = lat, useLon = lon) {
     setLoading(true);
     setErr(null);
     try {
       const url =
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+        `https://api.open-meteo.com/v1/forecast?latitude=${useLat}&longitude=${useLon}` +
         `&current_weather=true&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
 
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const data = await res.json();
+      const data = await fetchJson(url);
       const cur: CurrentWeather | undefined = data?.current_weather;
       if (!cur) throw new Error("No current_weather in response");
 
@@ -94,10 +146,51 @@ export default function WeatherWidget({
     }
   }
 
+  async function searchAndSetLocation() {
+    const q = query.trim();
+    if (!q) return;
+
+    setSearching(true);
+    setErr(null);
+    try {
+      const geoUrl =
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+          q
+        )}` + `&count=1&language=en&format=json`;
+
+      const geo = await fetchJson(geoUrl);
+      const r: GeoResult | undefined = geo?.results?.[0];
+      if (!r) throw new Error("Location not found");
+
+      const newLabel = [r.name, r.admin1, r.country].filter(Boolean).join(", ");
+      setLabel(newLabel);
+      setLat(r.latitude);
+      setLon(r.longitude);
+
+      try {
+        const payload: StoredLoc = {
+          label: newLabel,
+          lat: r.latitude,
+          lon: r.longitude,
+        };
+        localStorage.setItem(LS_KEY, JSON.stringify(payload));
+      } catch {}
+
+      setEditing(false);
+      setQuery("");
+
+      // fetch immediately for new coords
+      await loadWeather(r.latitude, r.longitude);
+    } catch (e: any) {
+      setErr(e?.message ?? "Search failed");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  // fetch whenever lat/lon changes initially
   useEffect(() => {
-    load();
-    const id = window.setInterval(load, 15 * 60 * 1000);
-    return () => window.clearInterval(id);
+    loadWeather(lat, lon);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lat, lon]);
 
@@ -105,19 +198,61 @@ export default function WeatherWidget({
     <div className="sideCard">
       <div className="wxTop">
         <div className="sideTitle">Weather</div>
-        <button
-          className="wxBtn"
-          type="button"
-          onClick={load}
-          aria-label="Refresh"
-        >
-          ↻
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            className="wxBtn"
+            type="button"
+            onClick={() => setEditing((v) => !v)}
+            aria-label="Change location"
+          >
+            🔎
+          </button>
+          <button
+            className="wxBtn"
+            type="button"
+            onClick={() => loadWeather()}
+            aria-label="Refresh"
+          >
+            ↻
+          </button>
+        </div>
       </div>
 
       <div className="wxPlace" style={{ cursor: "default" }}>
         {label}
       </div>
+
+      {editing && (
+        <div className="wxEdit">
+          <input
+            className="wxInput"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder='Try: "Tampa, FL" or "New York"'
+            onKeyDown={(e) => {
+              if (e.key === "Enter") searchAndSetLocation();
+              if (e.key === "Escape") setEditing(false);
+            }}
+          />
+          <div className="wxEditActions">
+            <button
+              className="wxBtnPill ghost"
+              type="button"
+              onClick={() => setEditing(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="wxBtnPill"
+              type="button"
+              onClick={searchAndSetLocation}
+              disabled={searching}
+            >
+              {searching ? "Searching…" : "Set"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="muted wxLoading">Loading…</div>
