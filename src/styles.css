@@ -1478,3 +1478,11 @@ html, body, #root{
 img, iframe, video{
   max-width: 100%;
 }
+/* Stop “half the page missing” clipping on mobile */
+html, body { overflow-x: auto; }
+
+/* Make long URLs / markdown / grid children shrink properly */
+* { min-width: 0; }
+.postShell .postBody { overflow-wrap: anywhere; word-break: break-word; }
+.postShell pre, .postShell code { white-space: pre-wrap; word-break: break-word; }
+img, iframe, video { max-width: 100%; }
