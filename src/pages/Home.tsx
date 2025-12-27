@@ -509,7 +509,7 @@ export default function Home() {
         </main>
 
         <aside className="newsSide">
-          <WeatherWidget defaultPlace="Sarasota, FL" />
+          <WeatherWidget />
           <div className="sideCard">
             <div className="sideTitle">Top Headlines</div>
             <div className="sideList">
