@@ -1486,3 +1486,17 @@ html, body { overflow-x: auto; }
 .postShell .postBody { overflow-wrap: anywhere; word-break: break-word; }
 .postShell pre, .postShell code { white-space: pre-wrap; word-break: break-word; }
 img, iframe, video { max-width: 100%; }
+
+/* ===== Global mobile safety ===== */
+html, body, #root { width: 100%; max-width: 100%; }
+body { overflow-x: hidden; } /* keeps layout clean */
+
+/* Make grid/flex children able to shrink (prevents cut-off text) */
+* { min-width: 0; }
+
+/* Media never forces overflow */
+img, iframe, video { max-width: 100%; height: auto; }
+
+/* Markdown / long URLs won’t blow out the page */
+.postBody { overflow-wrap: anywhere; word-break: break-word; }
+.postBody pre { overflow-x: auto; max-width: 100%; }
