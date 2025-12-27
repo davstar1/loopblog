@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { loadPosts, type PostRow } from "../lib/posts";
 import { supabase } from "../lib/supabase";
+import WeatherWidget from "../components/widgets/WeatherWidget";
 
 type HomeVideo = {
   youtube_id: string;
@@ -91,9 +92,71 @@ function VideoGallery({ videos }: { videos: HomeVideo[] }) {
   }, [openId]);
 
   // Inline “always works” lightbox styles (fixes the tiny inline iframe issue)
-    // Lightbox styling is in styles.css (videoLb* classes)
+  const backdropStyle: CSSProperties = {
+    position: "fixed",
+    inset: 0,
+    zIndex: 99999,
+    background: "rgba(0,0,0,.72)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "24px",
+  };
 
-if (!videos.length) return null;
+  const panelStyle: CSSProperties = {
+    width: "min(980px, 96vw)",
+    maxHeight: "90vh",
+    background: "#0b0f14",
+    borderRadius: 16,
+    boxShadow: "0 18px 60px rgba(0,0,0,.65)",
+    border: "1px solid rgba(255,255,255,.10)",
+    padding: 16,
+    position: "relative",
+  };
+
+  const closeStyle: CSSProperties = {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    border: "1px solid rgba(255,255,255,.14)",
+    background: "rgba(0,0,0,.55)",
+    color: "inherit",
+    cursor: "pointer",
+    display: "grid",
+    placeItems: "center",
+    lineHeight: 1,
+    fontSize: 18,
+  };
+
+  const frameStyle: CSSProperties = {
+    position: "relative",
+    width: "100%",
+    paddingTop: "56.25%", // 16:9
+    borderRadius: 12,
+    overflow: "hidden",
+    background: "#000",
+  };
+
+  const iframeStyle: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    border: 0,
+  };
+
+  const hintStyle: CSSProperties = {
+    display: "flex",
+    gap: 12,
+    justifyContent: "center",
+    marginTop: 10,
+    fontSize: 12,
+  };
+
+  if (!videos.length) return null;
 
   return (
     <section className="homeVideoSection" aria-label="Videos">
@@ -131,49 +194,28 @@ if (!videos.length) return null;
 
       {openId && (
         <div
-          className="videoLbBackdrop"
-         
+          className="lbBackdrop"
+          style={backdropStyle}
           role="dialog"
           aria-modal="true"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setOpenId(null);
           }}
         >
-          <div className="videoLbPanel" role="document">
+          <div className="lbPanel" style={panelStyle} role="document">
             <button
               type="button"
-              className="videoLbClose"
-             
+              className="lbClose"
+              style={closeStyle}
               onClick={() => setOpenId(null)}
               aria-label="Close"
             >
               ✕
             </button>
 
-            <button
-              type="button"
-              className="videoLbNav left"
-              onClick={() => index > 0 && setOpenId(ids[index - 1])}
-              disabled={index <= 0}
-              aria-label="Previous video"
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              className="videoLbNav right"
-              onClick={() =>
-                index >= 0 && index < ids.length - 1 && setOpenId(ids[index + 1])
-              }
-              disabled={index < 0 || index >= ids.length - 1}
-              aria-label="Next video"
-            >
-              ›
-            </button>
-
-            <div className="videoLbFrame">
+            <div className="lbFrame" style={frameStyle}>
               <iframe
-               
+                style={iframeStyle}
                 src={ytEmbed(openId)}
                 title="YouTube video"
                 allow="autoplay; encrypted-media; picture-in-picture"
@@ -181,7 +223,7 @@ if (!videos.length) return null;
               />
             </div>
 
-            <div className="videoLbHint muted">
+            <div className="lbHint muted" style={hintStyle}>
               <span>Esc to close</span>
               <span>← / → to switch</span>
             </div>
@@ -467,6 +509,7 @@ export default function Home() {
         </main>
 
         <aside className="newsSide">
+          <WeatherWidget defaultPlace="Sarasota, FL" />
           <div className="sideCard">
             <div className="sideTitle">Top Headlines</div>
             <div className="sideList">

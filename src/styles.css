@@ -1500,3 +1500,118 @@ img, iframe, video { max-width: 100%; height: auto; }
 /* Markdown / long URLs won’t blow out the page */
 .postBody { overflow-wrap: anywhere; word-break: break-word; }
 .postBody pre { overflow-x: auto; max-width: 100%; }
+
+/* ===========================
+   Weather widget (Home)
+=========================== */
+.wxTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.wxBtn{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  cursor: pointer;
+  display:grid;
+  place-items:center;
+}
+
+.wxPlace{
+  width: 100%;
+  text-align:left;
+  background: transparent;
+  border: 0;
+  padding: 6px 0 10px;
+  color: inherit;
+  font-weight: 800;
+  cursor:pointer;
+}
+
+.wxBody{ display:grid; gap: 10px; }
+
+.wxMain{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.wxIcon{ font-size: 22px; }
+.wxTemp{
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+}
+.wxUnit{ font-size: 14px; margin-left: 2px; opacity: .8; }
+
+.wxMeta{ display:grid; gap: 4px; }
+.wxDesc{ font-weight: 800; }
+.wxSmall{ font-size: 12px; }
+
+.wxEdit{ display:grid; gap: 8px; margin: 8px 0 10px; }
+.wxInput{
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  outline: none;
+}
+.wxEditActions{ display:flex; gap: 8px; justify-content:flex-end; }
+
+.wxBtnPill{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 800;
+}
+.wxBtnPill.ghost{ background: transparent; }
+
+.wxLink{
+  background:none;
+  border:0;
+  color: inherit;
+  text-decoration: underline;
+  cursor:pointer;
+  padding:0;
+  font: inherit;
+}
+
+.wxLoading{ padding: 10px 0; }
+/* =========================
+   GLOBAL SIZING FIX (forms + mobile)
+   Prevent inputs/textarea from overflowing their containers
+   (the classic "100% width + padding" overflow issue).
+========================= */
+
+*, *::before, *::after{
+  box-sizing: border-box;
+}
+
+input, textarea, select, button{
+  font: inherit;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Helps flex/grid children shrink instead of overflowing */
+.field, .row, .card{
+  min-width: 0;
+}
+
+/* Your admin uses .sideInput in a flex row */
+.sideInput{
+  width: 100%;
+  flex: 1 1 280px;
+}
