@@ -31,18 +31,12 @@ function publicUrlFromPath(path: string | null): string | null {
    Reading time + TOC helpers
 =========================== */
 function stripMarkdown(md: string) {
-  // remove fenced code blocks
   let s = md.replace(/```[\s\S]*?```/g, " ");
-  // remove inline code
   s = s.replace(/`[^`]*`/g, " ");
-  // remove images ![alt](url)
   s = s.replace(/!\[[^\]]*\]\([^)]+\)/g, " ");
-  // turn links [text](url) -> text
   s = s.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-  // remove heading markers/bullets
   s = s.replace(/^#{1,6}\s+/gm, "");
   s = s.replace(/^[-*+]\s+/gm, "");
-  // collapse whitespace
   s = s.replace(/\s+/g, " ").trim();
   return s;
 }
@@ -134,6 +128,219 @@ async function copyText(text: string) {
   }
 }
 
+/* ===========================
+   Comments section
+=========================== */
+type Comment = {
+  id: string;
+  post_id: string;
+  author_name: string;
+  body: string;
+  created_at: string;
+  likes: number;
+};
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+function CommentsSection({ postId }: { postId: string }) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const [name, setName] = useState("");
+  const [body, setBody] = useState("");
+
+  // Liked comment IDs stored in localStorage
+  const LIKED_KEY = `loopblog:liked:${postId}`;
+  const getLiked = (): Set<string> => {
+    try {
+      const raw = localStorage.getItem(LIKED_KEY);
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set();
+    }
+  };
+  const [liked, setLiked] = useState<Set<string>>(getLiked);
+
+  async function loadComments() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("comments")
+        .select("id,post_id,author_name,body,created_at,likes")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setComments((data ?? []) as Comment[]);
+    } catch {
+      // silently fail — comments are optional
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId]);
+
+  async function handleSubmit() {
+    setErr(null);
+    const cleanName = name.trim();
+    const cleanBody = body.trim();
+
+    if (!cleanName) return setErr("Please enter your name.");
+    if (!cleanBody) return setErr("Comment can't be empty.");
+    if (cleanBody.length > 1000) return setErr("Comment is too long (max 1000 chars).");
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("comments").insert({
+        post_id: postId,
+        author_name: cleanName,
+        body: cleanBody,
+        likes: 0,
+      });
+
+      if (error) throw error;
+
+      setName("");
+      setBody("");
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+      await loadComments();
+    } catch (e: any) {
+      setErr(e?.message ?? "Failed to post comment.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleLike(comment: Comment) {
+    if (liked.has(comment.id)) return;
+
+    const newLikes = (comment.likes ?? 0) + 1;
+    const newLiked = new Set(liked);
+    newLiked.add(comment.id);
+    setLiked(newLiked);
+
+    // optimistic update
+    setComments((prev) =>
+      prev.map((c) => (c.id === comment.id ? { ...c, likes: newLikes } : c))
+    );
+
+    try {
+      localStorage.setItem(LIKED_KEY, JSON.stringify([...newLiked]));
+      await supabase
+        .from("comments")
+        .update({ likes: newLikes })
+        .eq("id", comment.id);
+    } catch {
+      // revert
+      newLiked.delete(comment.id);
+      setLiked(new Set(liked));
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === comment.id ? { ...c, likes: comment.likes } : c
+        )
+      );
+    }
+  }
+
+  return (
+    <div className="commentsSection">
+      <div className="commentsSectionHeader">
+        <h3 className="commentsSectionTitle">
+          Comments
+          {comments.length > 0 && (
+            <span className="commentsCount">{comments.length}</span>
+          )}
+        </h3>
+      </div>
+
+      {/* Comment form */}
+      <div className="commentForm">
+        <input
+          className="commentInput"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={80}
+        />
+        <textarea
+          className="commentTextarea"
+          placeholder="Share your thoughts…"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={3}
+          maxLength={1000}
+        />
+        <div className="commentFormFooter">
+          <span className="commentCharCount muted">{body.length}/1000</span>
+          <button
+            className="commentSubmitBtn btn"
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Posting…" : "Post comment"}
+          </button>
+        </div>
+        {err && <div className="commentErr">{err}</div>}
+        {success && <div className="commentSuccess">Comment posted! ✓</div>}
+      </div>
+
+      {/* Comment list */}
+      {loading ? (
+        <div className="muted" style={{ padding: "12px 0" }}>Loading comments…</div>
+      ) : comments.length === 0 ? (
+        <div className="commentsEmpty">
+          No comments yet — be the first to leave one!
+        </div>
+      ) : (
+        <div className="commentsList">
+          {comments.map((c) => (
+            <div key={c.id} className="commentCard">
+              <div className="commentMeta">
+                <span className="commentAuthor">{c.author_name}</span>
+                <span className="commentTime muted">{timeAgo(c.created_at)}</span>
+              </div>
+              <div className="commentBody">{c.body}</div>
+              <div className="commentActions">
+                <button
+                  type="button"
+                  className={`commentLikeBtn ${liked.has(c.id) ? "liked" : ""}`}
+                  onClick={() => handleLike(c)}
+                  disabled={liked.has(c.id)}
+                  aria-label="Like this comment"
+                >
+                  <span className="commentLikeIcon">♥</span>
+                  {(c.likes ?? 0) > 0 && (
+                    <span className="commentLikeCount">{c.likes}</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Post() {
   const { id } = useParams<{ id: string }>();
 
@@ -147,7 +354,6 @@ export default function Post() {
 
   const [isNarrow, setIsNarrow] = useState(false);
 
-  // Responsive behavior for the post layout (1 column on narrow screens)
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 980px)");
     const apply = () => setIsNarrow(mq.matches);
@@ -156,7 +362,6 @@ export default function Post() {
     return () => mq.removeEventListener?.("change", apply);
   }, []);
 
-  // Load post
   useEffect(() => {
     let alive = true;
 
@@ -188,7 +393,6 @@ export default function Post() {
     };
   }, [id]);
 
-  // Load all posts for next/prev/related
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -205,13 +409,11 @@ export default function Post() {
     };
   }, []);
 
-  // Count a view on mount / when id changes (counts direct links too)
   useEffect(() => {
     if (!id) return;
     bumpView(id);
   }, [id]);
 
-  // ✅ Hooks MUST be called every render (even while loading / post=null)
   const bodyText: string = useMemo(() => {
     const p: any = post;
     return (p?.body_md ?? p?.body ?? "") as string;
@@ -257,177 +459,309 @@ export default function Post() {
       const bd = new Date(
         (b as any).published_at ?? (b as any).created_at
       ).getTime();
-      return bd - ad; // newest first
+      return bd - ad;
     });
 
     const idx = sorted.findIndex((p) => p.id === (post as any).id);
-    const prev = idx > 0 ? sorted[idx - 1] : null; // newer
-    const next = idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null; // older
+    const prev = idx > 0 ? sorted[idx - 1] : null;
+    const next = idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null;
     return { prev, next };
   }, [post, allPosts]);
 
   const related: PostRow[] = useMemo(() => {
     if (!post || !allPosts.length) return [];
-    const currentId = (post as any).id;
-
-    const category = ((post as any).category ?? (post as any).topic ?? null) as
-      | string
-      | null;
-
-    const others = allPosts.filter((p) => p.id !== currentId);
-
-    const sameCat = category
-      ? others.filter((p: any) => (p.category ?? p.topic ?? null) === category)
-      : [];
-
-    const pool = sameCat.length ? sameCat : others;
-
-    // newest first
-    pool.sort((a: any, b: any) => {
-      const ad = new Date(a.published_at ?? a.created_at).getTime();
-      const bd = new Date(b.published_at ?? b.created_at).getTime();
-      return bd - ad;
-    });
-
-    return pool.slice(0, 4);
+    return allPosts
+      .filter((p) => p.id !== (post as any).id)
+      .slice(0, 4);
   }, [post, allPosts]);
 
+  const showRightCol = !isNarrow && (!!coverUrl || toc.length > 0);
+  const rightColWidth = 260;
+
   const markdownComponents = useMemo(() => {
-    // Slugger must match TOC order; ReactMarkdown renders headings in order, so this aligns well.
-    const slug = createSlugger();
+    const slugger = createSlugger();
 
     return {
-      h2: ({ children }: any) => {
+      h2: ({ children, ...props }: any) => {
         const text = getNodeText(children);
-        const id = slug(text);
-        return <h2 id={id}>{children}</h2>;
+        const id = slugger(text);
+        return (
+          <h2 id={id} {...props}>
+            {children}
+          </h2>
+        );
       },
-      h3: ({ children }: any) => {
+      h3: ({ children, ...props }: any) => {
         const text = getNodeText(children);
-        const id = slug(text);
-        return <h3 id={id}>{children}</h3>;
+        const id = slugger(text);
+        return (
+          <h3 id={id} {...props}>
+            {children}
+          </h3>
+        );
+      },
+      pre: ({ children, ...props }: any) => {
+        const [codeCopied, setCodeCopied] = useState(false);
+
+        async function onCopy() {
+          const text = getNodeText(children);
+          const ok = await copyText(text);
+          if (ok) {
+            setCodeCopied(true);
+            setTimeout(() => setCodeCopied(false), 2000);
+          }
+        }
+
+        return (
+          <div style={{ position: "relative" }}>
+            <pre {...props}>{children}</pre>
+            <button
+              type="button"
+              onClick={onCopy}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                fontSize: 11,
+                padding: "4px 8px",
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,.14)",
+                background: "rgba(0,0,0,.45)",
+                color: "rgba(255,255,255,.82)",
+                cursor: "pointer",
+              }}
+            >
+              {codeCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+        );
       },
     };
-  }, [bodyText]);
+  }, []);
 
-  // ----- NOW it’s safe to early-return -----
-  if (loading) {
-    return (
-      <section className="stack">
-        <div className="card">
-          <p className="muted">Loading…</p>
-        </div>
-      </section>
-    );
-  }
-
-  if (err) {
-    return (
-      <section className="stack">
-        <div className="card stack">
-          <h2>Error</h2>
-          <p className="error">{err}</p>
-          <Link className="btn" to="/">
-            Go Home
-          </Link>
-        </div>
-      </section>
-    );
-  }
-
-  if (!post) {
-    return (
-      <section className="stack">
-        <div className="card stack">
-          <h2>Post not found</h2>
-          <p className="muted">That post doesn’t exist.</p>
-          <Link className="btn" to="/">
-            Go Home
-          </Link>
-        </div>
-      </section>
-    );
-  }
-
-  const dateLabel = new Date(
-    (post as any).published_at ?? (post as any).created_at
-  ).toLocaleString();
-
-  const showRightCol = !isNarrow && (coverUrl || toc.length > 0);
-  const rightColWidth = 320;
+  if (loading) return <div className="muted" style={{ padding: 24 }}>Loading…</div>;
+  if (err) return <div className="error" style={{ padding: 24 }}>Error: {err}</div>;
+  if (!post) return <div className="muted" style={{ padding: 24 }}>Post not found.</div>;
 
   return (
-    <section className="stack postShell">
-      <div className="card stack postCard">
-        <div
-          className="metaRow"
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            alignItems: "center",
+    <section className="postShell stack">
+      <div className="postMeta">
+        <span className="chip">{readingTimeLabel}</span>
+        <span className="chip">
+          {new Date(
+            (post as any).published_at ?? (post as any).created_at
+          ).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </span>
+        <button
+          type="button"
+          className="chip"
+          style={{ cursor: "pointer", background: "none", border: "1px solid var(--line)" }}
+          onClick={async () => {
+            const ok = await copyText(window.location.href);
+            if (ok) {
+              setCopied(true);
+              if (copyTimer.current) clearTimeout(copyTimer.current);
+              copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+            }
           }}
         >
-          <span className="chip">{dateLabel}</span>
-          <span className="chip">{readingTimeLabel}</span>
-          {(post as any).status && (
-            <span className="chip">{(post as any).status}</span>
+          {copied ? "Copied!" : "Share ↗"}
+        </button>
+      </div>
+
+      <h1 className="postTitle">{(post as any).title}</h1>
+
+      {(post as any).excerpt && (
+        <p className="muted postExcerpt">{(post as any).excerpt}</p>
+      )}
+
+      <div
+        className="postWrap"
+        style={{
+          display: "grid",
+          gridTemplateColumns: showRightCol
+            ? `minmax(0, 1fr) ${rightColWidth}px`
+            : "minmax(0, 1fr)",
+          gap: 16,
+          alignItems: "start",
+        }}
+      >
+        <div className="postMain">
+          {isNarrow && toc.length > 0 && (
+            <div
+              className="tocCard"
+              style={{
+                border: "1px solid var(--line)",
+                borderRadius: 16,
+                padding: 12,
+                marginBottom: 12,
+                background: "rgba(255,255,255,.02)",
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>
+                On this page
+              </div>
+              <div style={{ display: "grid", gap: 6 }}>
+                {toc.map((t) => (
+                  <a
+                    key={t.id}
+                    href={`#${t.id}`}
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                      paddingLeft: t.level === 3 ? 12 : 0,
+                      opacity: t.level === 3 ? 0.9 : 1,
+                    }}
+                  >
+                    {t.text}
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
 
-          <span style={{ flex: 1 }} />
+          <div className="postBody">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents as any}
+            >
+              {bodyText}
+            </ReactMarkdown>
+          </div>
 
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={async () => {
-              const url = window.location.href;
-              const ok = await copyText(url);
-              setCopied(ok);
-              if (copyTimer.current) window.clearTimeout(copyTimer.current);
-              copyTimer.current = window.setTimeout(
-                () => setCopied(false),
-                1200
-              );
-            }}
-            aria-label="Copy link"
-            style={{ padding: "8px 12px" }}
-          >
-            {copied ? "Copied!" : "Copy link"}
-          </button>
+          {(nav.prev || nav.next) && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr",
+                gap: 12,
+                marginTop: 18,
+              }}
+            >
+              {nav.prev ? (
+                <Link
+                  className="card"
+                  to={`/post/${(nav.prev as any).id}`}
+                  style={{ padding: 12, textDecoration: "none" }}
+                >
+                  <div className="muted" style={{ fontSize: 12 }}>
+                    ← Newer
+                  </div>
+                  <div style={{ fontWeight: 800, marginTop: 6 }}>
+                    {(nav.prev as any).title}
+                  </div>
+                </Link>
+              ) : (
+                <div />
+              )}
+
+              {nav.next ? (
+                <Link
+                  className="card"
+                  to={`/post/${(nav.next as any).id}`}
+                  style={{ padding: 12, textDecoration: "none" }}
+                >
+                  <div
+                    className="muted"
+                    style={{ fontSize: 12, textAlign: "right" }}
+                  >
+                    Older →
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: 800,
+                      marginTop: 6,
+                      textAlign: "right",
+                    }}
+                  >
+                    {(nav.next as any).title}
+                  </div>
+                </Link>
+              ) : (
+                <div />
+              )}
+            </div>
+          )}
+
+          {related.length > 0 && (
+            <div style={{ marginTop: 18 }}>
+              <div className="sectionTitle" style={{ marginBottom: 10 }}>
+                <h3 style={{ margin: 0 }}>Related posts</h3>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isNarrow
+                    ? "1fr"
+                    : "repeat(2, minmax(0, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {related.map((p: any) => (
+                  <Link
+                    key={p.id}
+                    to={`/post/${p.id}`}
+                    className="card"
+                    style={{ padding: 12, textDecoration: "none" }}
+                  >
+                    <div style={{ fontWeight: 800 }}>{p.title}</div>
+                    <div className="muted" style={{ marginTop: 6 }}>
+                      {new Date(
+                        p.published_at ?? p.created_at
+                      ).toLocaleString()}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Comments */}
+          <CommentsSection postId={id!} />
         </div>
 
-        <h1 className="postTitle">{(post as any).title}</h1>
+        {showRightCol && (
+          <aside
+            className="postSide"
+            style={{ display: "grid", gap: 12, position: "sticky", top: 14 }}
+          >
+            {coverUrl && (
+              <a
+                href={coverUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="thumb"
+                style={{ textDecoration: "none" }}
+              >
+                <img
+                  src={coverUrl}
+                  alt={(post as any).title ?? "Cover"}
+                  style={{
+                    width: "100%",
+                    borderRadius: 16,
+                    display: "block",
+                    border: "1px solid var(--line)",
+                  }}
+                />
+              </a>
+            )}
 
-        {(post as any).excerpt && (
-          <p className="muted postExcerpt">{(post as any).excerpt}</p>
-        )}
-
-        {/* Text left, TOC/cover right */}
-        <div
-          className="postWrap"
-          style={{
-            display: "grid",
-            gridTemplateColumns: showRightCol
-              ? `minmax(0, 1fr) ${rightColWidth}px`
-              : "minmax(0, 1fr)",
-            gap: 16,
-            alignItems: "start",
-          }}
-        >
-          <div className="postMain">
-            {/* TOC for mobile (top) */}
-            {isNarrow && toc.length > 0 && (
+            {toc.length > 0 && (
               <div
                 className="tocCard"
                 style={{
                   border: "1px solid var(--line)",
                   borderRadius: 16,
                   padding: 12,
-                  marginBottom: 12,
                   background: "rgba(255,255,255,.02)",
                 }}
               >
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>
                   On this page
                 </div>
                 <div style={{ display: "grid", gap: 6 }}>
@@ -448,219 +782,58 @@ export default function Post() {
                 </div>
               </div>
             )}
+          </aside>
+        )}
+      </div>
 
-            <div className="postBody">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents as any}
-              >
-                {bodyText}
-              </ReactMarkdown>
-            </div>
-
-            {/* Next / Prev */}
-            {(nav.prev || nav.next) && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: isNarrow ? "1fr" : "1fr 1fr",
-                  gap: 12,
-                  marginTop: 18,
-                }}
-              >
-                {nav.prev ? (
-                  <Link
-                    className="card"
-                    to={`/post/${(nav.prev as any).id}`}
-                    style={{ padding: 12, textDecoration: "none" }}
-                  >
-                    <div className="muted" style={{ fontSize: 12 }}>
-                      ← Newer
-                    </div>
-                    <div style={{ fontWeight: 800, marginTop: 6 }}>
-                      {(nav.prev as any).title}
-                    </div>
-                  </Link>
-                ) : (
-                  <div />
-                )}
-
-                {nav.next ? (
-                  <Link
-                    className="card"
-                    to={`/post/${(nav.next as any).id}`}
-                    style={{ padding: 12, textDecoration: "none" }}
-                  >
-                    <div
-                      className="muted"
-                      style={{ fontSize: 12, textAlign: "right" }}
-                    >
-                      Older →
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        marginTop: 6,
-                        textAlign: "right",
-                      }}
-                    >
-                      {(nav.next as any).title}
-                    </div>
-                  </Link>
-                ) : (
-                  <div />
-                )}
-              </div>
-            )}
-
-            {/* Related */}
-            {related.length > 0 && (
-              <div style={{ marginTop: 18 }}>
-                <div className="sectionTitle" style={{ marginBottom: 10 }}>
-                  <h3 style={{ margin: 0 }}>Related posts</h3>
-                </div>
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: isNarrow
-                      ? "1fr"
-                      : "repeat(2, minmax(0, 1fr))",
-                    gap: 12,
-                  }}
-                >
-                  {related.map((p: any) => (
-                    <Link
-                      key={p.id}
-                      to={`/post/${p.id}`}
-                      className="card"
-                      style={{ padding: 12, textDecoration: "none" }}
-                    >
-                      <div style={{ fontWeight: 800 }}>{p.title}</div>
-                      <div className="muted" style={{ marginTop: 6 }}>
-                        {new Date(
-                          p.published_at ?? p.created_at
-                        ).toLocaleString()}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+      {imageUrls.length > 0 && (
+        <>
+          <div className="sectionTitle" style={{ marginTop: 12 }}>
+            <h3>Photos</h3>
+            <span className="muted">{imageUrls.length} uploaded</span>
           </div>
 
-          {/* Right column (desktop): cover + TOC */}
-          {showRightCol && (
-            <aside
-              className="postSide"
-              style={{ display: "grid", gap: 12, position: "sticky", top: 14 }}
-            >
-              {coverUrl && (
-                <a
-                  href={coverUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="thumb"
-                  style={{ textDecoration: "none" }}
-                >
-                  <img
-                    src={coverUrl}
-                    alt={(post as any).title ?? "Cover"}
-                    style={{
-                      width: "100%",
-                      borderRadius: 16,
-                      display: "block",
-                      border: "1px solid var(--line)",
-                    }}
-                  />
-                </a>
-              )}
-
-              {toc.length > 0 && (
-                <div
-                  className="tocCard"
+          <div
+            className="postImageGrid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {imageUrls.map((url) => (
+              <a
+                key={url}
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="thumb"
+              >
+                <img
+                  src={url}
+                  alt="post"
                   style={{
+                    width: "100%",
+                    height: 160,
+                    objectFit: "cover",
+                    borderRadius: 14,
                     border: "1px solid var(--line)",
-                    borderRadius: 16,
-                    padding: 12,
-                    background: "rgba(255,255,255,.02)",
+                    display: "block",
                   }}
-                >
-                  <div style={{ fontWeight: 800, marginBottom: 8 }}>
-                    On this page
-                  </div>
-                  <div style={{ display: "grid", gap: 6 }}>
-                    {toc.map((t) => (
-                      <a
-                        key={t.id}
-                        href={`#${t.id}`}
-                        style={{
-                          textDecoration: "none",
-                          color: "inherit",
-                          paddingLeft: t.level === 3 ? 12 : 0,
-                          opacity: t.level === 3 ? 0.9 : 1,
-                        }}
-                      >
-                        {t.text}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </aside>
-          )}
-        </div>
+                />
+              </a>
+            ))}
+          </div>
+        </>
+      )}
 
-        {/* Photos */}
-        {imageUrls.length > 0 && (
-          <>
-            <div className="sectionTitle" style={{ marginTop: 12 }}>
-              <h3>Photos</h3>
-              <span className="muted">{imageUrls.length} uploaded</span>
-            </div>
-
-            <div
-              className="postImageGrid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-                gap: 12,
-              }}
-            >
-              {imageUrls.map((url) => (
-                <a
-                  key={url}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="thumb"
-                >
-                  <img
-                    src={url}
-                    alt="post"
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      objectFit: "cover",
-                      borderRadius: 14,
-                      border: "1px solid var(--line)",
-                      display: "block",
-                    }}
-                  />
-                </a>
-              ))}
-            </div>
-          </>
-        )}
-
-        <div className="row">
-          <Link className="btn ghost" to="/">
-            ← Back
-          </Link>
-          <Link className="btn" to="/write">
-            New Post
-          </Link>
-        </div>
+      <div className="row">
+        <Link className="btn ghost" to="/">
+          ← Back
+        </Link>
+        <Link className="btn" to="/write">
+          New Post
+        </Link>
       </div>
     </section>
   );

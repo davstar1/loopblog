@@ -342,10 +342,9 @@ img, iframe, video{ max-width: 100%; }
   right: 0;
   max-width: none;
 
-  /* safer defaults (won't depend on theme vars) */
-  background: var(--navBg, hsl(210, 17%, 98%));
-  color: var(--navInk, #0a0d12);
-  border-bottom: 1px solid var(--line, rgba(10,13,18,.14));
+  background: var(--navBg, #1c1f23);
+  color: var(--navInk, rgba(255,255,255,.92));
+  border-bottom: 1px solid var(--line, rgba(255,255,255,.08));
 }
 
 .newsNavTop{
@@ -389,9 +388,9 @@ img, iframe, video{ max-width: 100%; }
 }
 
 .navBtn{
-  border: 1px solid var(--line, rgba(10,13,18,.18));
-  background: rgba(10,13,18, 0.05);
-  color: inherit;
+  border: 1px solid var(--line, rgba(255,255,255,.14));
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.9);
   border-radius: 12px;
   padding: 8px 12px;
   cursor:pointer;
@@ -399,7 +398,7 @@ img, iframe, video{ max-width: 100%; }
   font-size: 14px;
 }
 
-.navBtn:hover{ background: rgba(10,13,18, 0.08); }
+.navBtn:hover{ background: rgba(255,255,255,.12); }
 .navBtn.ghost{ background: transparent; }
 
 .newsNavCats{
@@ -409,8 +408,8 @@ img, iframe, video{ max-width: 100%; }
   max-width: 2000px;
   margin: 0 auto;
 
-  background: #0a0d12;
-  border-top: 1px solid rgba(136, 130, 130, 0.06);
+  background: #14171b;
+  border-top: 1px solid rgba(255,255,255,.06);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -1449,4 +1448,393 @@ html[data-theme="dark"] .homeSearch::placeholder{
 html[data-theme="dark"] .homeSearch:focus{
   border-color: rgba(255,255,255,.26) !important;
   box-shadow: 0 0 0 3px rgba(255,255,255,.10) !important;
+}
+
+/* =========================================================
+   DARK GREY THEME — global colour tokens
+   These override the default light/mixed values everywhere
+========================================================= */
+:root {
+  --bg:        #1a1d21;
+  --bg2:       #1f2226;
+  --bg3:       #242830;
+  --line:      rgba(255,255,255,.09);
+  --text:      rgba(255,255,255,.88);
+  --muted:     rgba(255,255,255,.52);
+  --accent:    #7eb3ff;
+  --shadow:    0 18px 60px rgba(0,0,0,.55);
+  --navBg:     #1c1f23;
+  --navInk:    rgba(255,255,255,.92);
+}
+
+html, body, #root {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Footer dark */
+.footer {
+  background: var(--bg);
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+/* App shell dark */
+.appX {
+  background: var(--bg);
+}
+
+/* Cards dark */
+.card {
+  background: var(--bg2);
+  border-color: var(--line);
+}
+
+/* Rail/main/hero items dark */
+.railCard,
+.mainItem,
+.heroCard {
+  background: var(--bg2);
+  border-color: var(--line);
+}
+
+.railCard:hover,
+.mainItem:hover {
+  background: var(--bg3);
+  border-color: rgba(255,255,255,.16);
+}
+
+/* Sidebar cards */
+.sideCard {
+  background: var(--bg2);
+  border-color: var(--line);
+}
+
+/* Nav brand dark */
+.newsBrand { color: rgba(255,255,255,.92); }
+
+/* Burger dark */
+.burger {
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+}
+
+/* Inputs dark (restore dark styling, overrides the light-surface !important fixes for admin) */
+html:not(.adminPage) .field input,
+html:not(.adminPage) .field textarea,
+html:not(.adminPage) .field select,
+.homeSearch,
+.homeSort,
+.wxInput {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+/* Override the "not dark theme" search fix */
+html:not([data-theme="dark"]) .homeSearch {
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+}
+html:not([data-theme="dark"]) .homeSearch::placeholder {
+  color: var(--muted) !important;
+}
+
+/* Btn dark */
+.btn {
+  background: rgba(255,255,255,.07);
+  border-color: var(--line);
+  color: var(--text);
+}
+.btn:hover { background: rgba(255,255,255,.12); }
+
+/* Write page card — dark (overrides the white !important) */
+.stack > .card.stack {
+  background: var(--bg2) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,.35) !important;
+  color: var(--text) !important;
+  --text: rgba(255,255,255,.88);
+  --line: rgba(255,255,255,.10);
+}
+
+.stack > .card.stack .btn,
+.stack > .card.stack .row button,
+.stack > .card.stack .row a {
+  background: rgba(255,255,255,.08) !important;
+  color: rgba(255,255,255,.92) !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+.stack > .card.stack .btn:hover,
+.stack > .card.stack .row button:hover {
+  background: rgba(255,255,255,.14) !important;
+}
+
+.stack > .card.stack button[type="submit"],
+.stack > .card.stack .btnPrimary {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+
+.stack > .card.stack button[type="submit"]:hover,
+.stack > .card.stack .btnPrimary:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.field input,
+.field textarea,
+.field select,
+.sideInput {
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+}
+
+.field input::placeholder,
+.field textarea::placeholder,
+.sideInput::placeholder {
+  color: var(--muted) !important;
+}
+
+/* =========================================================
+   COMMENTS SECTION
+========================================================= */
+.commentsSection {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line, rgba(255,255,255,.09));
+  display: grid;
+  gap: 20px;
+}
+
+.commentsSectionHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.commentsSectionTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.commentsCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.12);
+  font-size: 12px;
+  font-weight: 800;
+  font-family: system-ui, sans-serif;
+}
+
+/* Comment form */
+.commentForm {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line, rgba(255,255,255,.09));
+  background: var(--bg2, rgba(255,255,255,.03));
+}
+
+.commentInput {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  background: var(--bg3, rgba(255,255,255,.05));
+  color: var(--text, rgba(255,255,255,.88));
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.commentInput:focus {
+  border-color: var(--accent, #7eb3ff);
+  box-shadow: 0 0 0 3px rgba(126,179,255,.15);
+}
+
+.commentTextarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  background: var(--bg3, rgba(255,255,255,.05));
+  color: var(--text, rgba(255,255,255,.88));
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 90px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.commentTextarea::placeholder,
+.commentInput::placeholder {
+  color: var(--muted, rgba(255,255,255,.45));
+}
+
+.commentTextarea:focus {
+  border-color: var(--accent, #7eb3ff);
+  box-shadow: 0 0 0 3px rgba(126,179,255,.15);
+}
+
+.commentFormFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.commentCharCount {
+  font-size: 12px;
+}
+
+.commentSubmitBtn {
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--accent, #7eb3ff);
+  color: #0a0d12;
+  border: none;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .18s, transform .12s;
+}
+
+.commentSubmitBtn:hover:not(:disabled) {
+  background: #a8ccff;
+  transform: translateY(-1px);
+}
+
+.commentSubmitBtn:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.commentErr {
+  font-size: 13px;
+  color: #f87171;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(248,113,113,.10);
+  border: 1px solid rgba(248,113,113,.20);
+}
+
+.commentSuccess {
+  font-size: 13px;
+  color: #4ade80;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(74,222,128,.10);
+  border: 1px solid rgba(74,222,128,.20);
+}
+
+/* Comment list */
+.commentsList {
+  display: grid;
+  gap: 12px;
+}
+
+.commentsEmpty {
+  font-size: 14px;
+  opacity: .62;
+  padding: 12px 0;
+}
+
+.commentCard {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line, rgba(255,255,255,.09));
+  background: var(--bg2, rgba(255,255,255,.03));
+  display: grid;
+  gap: 8px;
+  transition: border-color .16s;
+}
+
+.commentCard:hover {
+  border-color: rgba(255,255,255,.16);
+}
+
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.commentAuthor {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.commentTime {
+  font-size: 12px;
+}
+
+.commentBody {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text, rgba(255,255,255,.85));
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.commentActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.commentLikeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(255,255,255,.12));
+  background: transparent;
+  color: var(--muted, rgba(255,255,255,.52));
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s;
+}
+
+.commentLikeBtn:hover:not(:disabled) {
+  background: rgba(255,255,255,.07);
+  color: #f87171;
+  border-color: rgba(248,113,113,.30);
+}
+
+.commentLikeBtn.liked {
+  color: #f87171;
+  border-color: rgba(248,113,113,.30);
+  background: rgba(248,113,113,.08);
+  cursor: default;
+}
+
+.commentLikeIcon {
+  font-size: 13px;
+}
+
+.commentLikeCount {
+  font-weight: 700;
 }
