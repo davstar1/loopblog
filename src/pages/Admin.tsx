@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { loadPosts, type PostRow } from "../lib/posts";
 import type { User } from "@supabase/supabase-js";
+import MusicManager from "../components/MusicManager";
+import ProfileManager from "../components/ProfileManager";
 
 type YoutubeRow = {
   id: string;
@@ -276,6 +278,7 @@ export default function Admin() {
               </div>
             )}
           </div>
+          <ProfileManager />
 
           {/* Posts manager */}
           <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
@@ -428,6 +431,7 @@ export default function Admin() {
               </div>
             )}
           </div>
+          <MusicManager />
         </>
       ) : (
         <form className="card stack" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }} onSubmit={login}>

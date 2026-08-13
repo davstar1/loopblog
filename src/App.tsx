@@ -2,7 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import AppLayout from "./components/layout/AppLayout";
 
-import Home from "./pages/Home";
+import Videos from "./pages/Videos";
+import Music from "./pages/Music";
+import Journal from "./pages/Journal";
 import Write from "./pages/Write";
 import Post from "./pages/Post";
 import Admin from "./pages/Admin";
@@ -14,7 +16,9 @@ export default function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Videos />} />
+        <Route path="/music" element={<Music />} />
+        <Route path="/journal" element={<Journal />} />
 
         <Route
           path="/write"

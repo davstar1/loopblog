@@ -13,7 +13,7 @@ export default function AppLayout() {
         </Container>
       </main>
 
-      <footer className="footer">© {new Date().getFullYear()} LoopBlog</footer>
+      <footer className="footer"><span>© {new Date().getFullYear()} LoopBlog</span><span>Videos · music · journal</span></footer>
     </div>
   );
 }

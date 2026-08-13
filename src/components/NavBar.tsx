@@ -2,8 +2,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
-import loopLogo from "../assets/loopdot.png";
-
 type AuthState = {
   loading: boolean;
   authed: boolean;
@@ -11,6 +9,7 @@ type AuthState = {
 };
 
 export default function Navbar() {
+  const brandIcon = `${import.meta.env.BASE_URL}favicon.svg?v=3`;
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [auth, setAuth] = useState<AuthState>({ loading: true, authed: false });
@@ -68,7 +67,7 @@ export default function Navbar() {
       <div className="newsNavTop">
         <NavLink to="/" className="newsBrand" onClick={() => setOpen(false)}>
           <img
-            src={loopLogo}
+            src={brandIcon}
             alt=""
             aria-hidden="true"
             className="navLogo"
@@ -80,7 +79,7 @@ export default function Navbar() {
               borderRadius: 999,
             }}
           />
-          <span>LoopBlog</span>
+          <span className="brandWord">LoopBlog</span>
         </NavLink>
 
         <div className="newsNavActions">
@@ -127,8 +126,11 @@ export default function Navbar() {
           onClick={() => setOpen(false)}
           end
         >
-          Home
+          Videos
         </NavLink>
+
+        <NavLink to="/music" className={linkClass} onClick={() => setOpen(false)}>Music</NavLink>
+        <NavLink to="/journal" className={linkClass} onClick={() => setOpen(false)}>Journal</NavLink>
 
         {auth.authed && (
           <NavLink
