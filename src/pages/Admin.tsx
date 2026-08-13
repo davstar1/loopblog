@@ -5,6 +5,7 @@ import { loadPosts, type PostRow } from "../lib/posts";
 import type { User } from "@supabase/supabase-js";
 import MusicManager from "../components/MusicManager";
 import ProfileManager from "../components/ProfileManager";
+import CommentsManager from "../components/CommentsManager";
 
 type YoutubeRow = {
   id: string;
@@ -432,6 +433,7 @@ export default function Admin() {
             )}
           </div>
           <MusicManager />
+          <CommentsManager />
         </>
       ) : (
         <form className="card stack" style={{ maxWidth: 520, margin: "0 auto", width: "100%" }} onSubmit={login}>

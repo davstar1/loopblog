@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { loadProfileImage } from "../lib/profile";
+import { loadSiteProfile } from "../lib/profile";
+import MediaCommunity from "../components/MediaCommunity";
 
 type Video = { id: string; youtube_id: string; title: string | null };
 
@@ -11,13 +12,14 @@ export default function Videos() {
   const [active, setActive] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState("/loopdot.png");
+  const [bannerImage, setBannerImage] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from("youtube_videos").select("id,youtube_id,title").order("created_at", { ascending: false })
       .then(({ data }) => { setVideos((data ?? []) as Video[]); setLoading(false); });
   }, []);
 
-  useEffect(() => { void loadProfileImage().then(setProfileImage); }, []);
+  useEffect(() => { void loadSiteProfile().then((profile) => { setProfileImage(profile.profileImage); setBannerImage(profile.bannerImage); }); }, []);
 
   useEffect(() => {
     if (!active) return;
@@ -29,6 +31,7 @@ export default function Videos() {
 
   return (
     <section className="mediaPage">
+      {bannerImage && <div className="videoBanner"><img src={bannerImage} alt="LoopBlog banner" /></div>}
       <div className="profileIntro">
         <div className="profileRing"><img src={profileImage} alt="LoopBlog" className="profileMark" /></div>
         <div>
@@ -60,6 +63,7 @@ export default function Videos() {
             <button className="mediaClose" onClick={() => setActive(null)} aria-label="Close video">×</button>
             <div className="videoRatio"><iframe src={`https://www.youtube.com/embed/${active.youtube_id}?autoplay=1&rel=0`} title={active.title ?? "LoopBlog video"} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div>
             {active.title && <h2>{active.title}</h2>}
+            <MediaCommunity kind="video" itemId={active.id} />
           </div>
         </div>
       )}
