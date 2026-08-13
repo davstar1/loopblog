@@ -88,7 +88,7 @@ export default function Navbar() {
               <span className="navUser muted">
                 {auth.email ? auth.email : "Logged in"}
               </span>
-              <button className="navBtn ghost" onClick={onLogout} type="button">
+              <button className="navBtn ghost actionWhite" onClick={onLogout} type="button">
                 Log out
               </button>
             </>

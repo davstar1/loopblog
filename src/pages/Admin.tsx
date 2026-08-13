@@ -268,7 +268,7 @@ export default function Admin() {
               <button className="btn" type="button" onClick={() => nav("/write")}>
                 New Post
               </button>
-              <button className="btn ghost" type="button" onClick={logout} disabled={busy}>
+              <button className="btn ghost actionWhite" type="button" onClick={logout} disabled={busy}>
                 {busy ? "Signing out…" : "Log out"}
               </button>
             </div>
@@ -296,7 +296,7 @@ export default function Admin() {
                 onChange={(e) => setPostQuery(e.target.value)}
                 style={{ flex: 1, minWidth: 220 }}
               />
-              <button className="btn ghost" type="button" onClick={refreshPosts} disabled={postsLoading}>
+              <button className="btn ghost actionWhite" type="button" onClick={refreshPosts} disabled={postsLoading}>
                 {postsLoading ? "Refreshing…" : "Refresh"}
               </button>
             </div>
@@ -462,7 +462,7 @@ export default function Admin() {
             <button className="btn" type="submit" disabled={busy}>
               {busy ? "Logging in…" : "Log in"}
             </button>
-            <button className="btn ghost" type="button" onClick={() => nav("/")}>
+            <button className="btn ghost actionWhite" type="button" onClick={() => nav("/")}>
               Cancel
             </button>
           </div>
