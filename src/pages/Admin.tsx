@@ -281,7 +281,7 @@ export default function Admin() {
           <ProfileManager />
 
           {/* Posts manager */}
-          <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
+          <div className="card stack postsManager" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
             <div className="sectionTitle">
               <h3 style={{ margin: 0 }}>Posts</h3>
               <span style={{ opacity: 0.85 }}>{postCount} total</span>
@@ -333,10 +333,10 @@ export default function Admin() {
                       </div>
 
                       <div className="row" style={{ justifyContent: "flex-end" }}>
-                        <Link className="btn ghost" to={`/post/${p.id}`}>
+                        <Link className="btn ghost actionWhite" to={`/post/${p.id}`}>
                           View
                         </Link>
-                        <Link className="btn" to={`/edit/${p.id}`}>
+                        <Link className="btn actionWhite" to={`/edit/${p.id}`}>
                           Edit
                         </Link>
                       </div>
@@ -348,7 +348,7 @@ export default function Admin() {
           </div>
 
           {/* YouTube manager */}
-          <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
+          <div className="card stack youtubeManager" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
             <div className="sectionTitle">
               <h3 style={{ margin: 0 }}>YouTube Gallery Manager</h3>
               <span style={{ opacity: 0.85 }}>{videoCount} videos</span>
@@ -422,7 +422,7 @@ export default function Admin() {
                     </div>
 
                     <div style={{ padding: "0 12px 0 0" }}>
-                      <button className="btn ghost" type="button" onClick={() => removeVideo(v)}>
+                      <button className="btn ghost actionWhite" type="button" onClick={() => removeVideo(v)}>
                         Remove
                       </button>
                     </div>

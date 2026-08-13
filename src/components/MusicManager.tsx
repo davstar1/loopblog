@@ -59,7 +59,7 @@ export default function MusicManager() {
         <button className="btn" type="button" onClick={add} disabled={busy}>{busy ? "Adding…" : "Add track"}</button>
       </div>
       {msg && <p className="muted">{msg}</p>}
-      <div className="adminTrackList">{tracks.map((track) => <div key={track.id}><span><b>{track.title}</b><small>{track.artist || "LoopBlog"} · {track.embed_url ? "embed" : "audio"}</small></span><button className="btn ghost" onClick={() => remove(track.id)}>Remove</button></div>)}</div>
+      <div className="adminTrackList">{tracks.map((track) => <div key={track.id}><span><b>{track.title}</b><small>{track.artist || "LoopBlog"} · {track.embed_url ? "embed" : "audio"}</small></span><button className="btn ghost actionWhite" onClick={() => remove(track.id)}>Remove</button></div>)}</div>
     </div>
   );
 }
