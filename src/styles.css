@@ -1832,7 +1832,14 @@ html:not([data-theme="dark"]) .homeSearch::placeholder {
 }
 
 .commentLikeIcon {
-  font-size: 13px;
+  font-size: 18px;
+  filter: grayscale(1);
+  opacity: .72;
+}
+
+.commentLikeBtn.liked .commentLikeIcon {
+  filter: none;
+  opacity: 1;
 }
 
 .commentLikeCount {

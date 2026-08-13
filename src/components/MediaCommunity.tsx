@@ -58,7 +58,7 @@ export default function MediaCommunity({ kind, itemId }: { kind: MediaKind; item
   return (
     <div className="mediaCommunity">
       <div className="communityActions">
-        <button className={liked ? "liked" : ""} type="button" onClick={toggleLike} aria-label={liked ? "Unlike" : "Like"}><span>{liked ? "♥" : "♡"}</span>{likes}</button>
+        <button className={liked ? "liked" : ""} type="button" onClick={toggleLike} aria-label={liked ? "Remove shaka" : "Send a shaka"}><span aria-hidden="true">🤙🏽</span>{likes}</button>
         <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}><span>○</span>{comments.length} comments</button>
       </div>
       {open && <div className="communityPanel">

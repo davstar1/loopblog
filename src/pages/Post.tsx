@@ -325,9 +325,9 @@ function CommentsSection({ postId }: { postId: string }) {
                   className={`commentLikeBtn ${liked.has(c.id) ? "liked" : ""}`}
                   onClick={() => handleLike(c)}
                   disabled={liked.has(c.id)}
-                  aria-label="Like this comment"
+                  aria-label="Send a shaka to this comment"
                 >
-                  <span className="commentLikeIcon">♥</span>
+                  <span className="commentLikeIcon" aria-hidden="true">🤙🏽</span>
                   {(c.likes ?? 0) > 0 && (
                     <span className="commentLikeCount">{c.likes}</span>
                   )}
