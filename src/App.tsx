@@ -9,6 +9,7 @@ import Write from "./pages/Write";
 import Post from "./pages/Post";
 import Admin from "./pages/Admin";
 import EditPost from "./pages/EditPost";
+import LogoOptions from "./pages/LogoOptions";
 
 import RequireAuth from "./components/RequireAuth";
 
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/post/:id" element={<Post />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/edit/:id" element={<EditPost />} />
+        <Route path="/logo-options" element={<LogoOptions />} />
 
         {/* keep this LAST */}
         <Route path="*" element={<Navigate to="/" replace />} />

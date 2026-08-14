@@ -9,7 +9,7 @@ type AuthState = {
 };
 
 export default function Navbar() {
-  const brandIcon = `${import.meta.env.BASE_URL}favicon.svg?v=3`;
+  const brandIcon = `${import.meta.env.BASE_URL}loopblog-icon-01.svg`;
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [auth, setAuth] = useState<AuthState>({ loading: true, authed: false });
