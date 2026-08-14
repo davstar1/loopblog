@@ -247,7 +247,7 @@ export default function Admin() {
 
   if (checking) {
     return (
-      <section className="stack" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
+      <section className="stack adminPage" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
         <h1>Admin</h1>
         <div className="card">Checking session…</div>
       </section>
@@ -255,7 +255,7 @@ export default function Admin() {
   }
 
   return (
-    <section className="stack" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
+    <section className="stack adminPage" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
       <h1>admin</h1>
 
       {user ? (
