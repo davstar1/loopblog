@@ -10,9 +10,9 @@ export default function AppLayout() {
     const base = import.meta.env.BASE_URL;
     const route = encodeURIComponent(location.pathname || "/");
     const icons: Record<string, string> = {
-      svg: `${base}loopblog-icon-01.svg?v=3&route=${route}`,
-      png: `${base}favicon-32x32.png?v=3&route=${route}`,
-      ico: `${base}favicon.ico?v=3&route=${route}`,
+      svg: `${base}loopblog-favicon-ipad-20260814.svg?route=${route}`,
+      png: `${base}loopblog-favicon-ipad-20260814-32.png?route=${route}`,
+      ico: `${base}loopblog-favicon-ipad-20260814.ico?route=${route}`,
     };
 
     Object.entries(icons).forEach(([kind, href]) => {

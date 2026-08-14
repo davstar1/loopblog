@@ -206,6 +206,40 @@ export default function EditPost() {
     }
   }
 
+  async function deleteCover() {
+    if (!id || !coverPath) return;
+    const yes = window.confirm("Delete this cover photo? The post will remain.");
+    if (!yes) return;
+
+    setErr(null);
+    setOk(null);
+
+    const previousPath = coverPath;
+
+    try {
+      setSaving(true);
+
+      const { error } = await supabase
+        .from(POSTS_TABLE)
+        .update({ cover_path: null })
+        .eq("id", id);
+      if (error) throw error;
+
+      setCoverPath(null);
+
+      try {
+        await removeFromBucket(previousPath);
+        setOk("Cover photo deleted ✅");
+      } catch {
+        setOk("Cover photo removed from the post. The stored file could not be cleaned up.");
+      }
+    } catch (e: any) {
+      setErr(e?.message ?? "Failed to delete the cover photo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function onAddImages(e: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
@@ -412,10 +446,10 @@ export default function EditPost() {
           <h1 style={{ margin: 0 }}>Edit Post</h1>
           {id && (
             <div className="row">
-              <Link className="btn ghost" to={`/post/${id}`}>
+              <Link className="btn ghost actionWhite" to={`/post/${id}`}>
                 View
               </Link>
-              <Link className="btn ghost" to="/admin">
+              <Link className="btn ghost actionWhite" to="/admin">
                 Admin
               </Link>
             </div>
@@ -504,16 +538,28 @@ export default function EditPost() {
             <div className="card stack" style={{ border: "1px solid var(--line)" }}>
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <strong>Cover</strong>
-                <label className="btn ghost" style={{ cursor: saving ? "not-allowed" : "pointer" }}>
-                  Replace
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={onReplaceCover}
-                    disabled={saving}
-                    style={{ display: "none" }}
-                  />
-                </label>
+                <div className="row">
+                  <label className="btn ghost actionWhite" style={{ cursor: saving ? "not-allowed" : "pointer" }}>
+                    Replace
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={onReplaceCover}
+                      disabled={saving}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                  {coverPath && (
+                    <button
+                      className="btn ghost actionWhite dangerAction"
+                      type="button"
+                      onClick={deleteCover}
+                      disabled={saving}
+                    >
+                      Delete cover
+                    </button>
+                  )}
+                </div>
               </div>
 
               {coverUrl ? (
@@ -537,7 +583,7 @@ export default function EditPost() {
             <div className="card stack" style={{ border: "1px solid var(--line)" }}>
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <strong>Images</strong>
-                <label className="btn ghost" style={{ cursor: saving ? "not-allowed" : "pointer" }}>
+                <label className="btn ghost actionWhite" style={{ cursor: saving ? "not-allowed" : "pointer" }}>
                   Add
                   <input
                     type="file"
@@ -600,7 +646,7 @@ export default function EditPost() {
                 {saving ? "Saving…" : "Save changes"}
               </button>
               <button
-                className="btn ghost"
+                className="btn ghost actionWhite"
                 type="button"
                 onClick={() => nav(-1)}
                 disabled={saving}
@@ -610,13 +656,13 @@ export default function EditPost() {
             </div>
 
             <button
-              className="btn ghost"
+              className="btn ghost actionWhite dangerAction"
               type="button"
               onClick={deletePost}
               disabled={saving}
               style={{ borderColor: "rgba(255,99,71,.45)" }}
             >
-              Delete post
+              Delete Post
             </button>
           </div>
         </form>

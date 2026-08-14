@@ -828,7 +828,7 @@ export default function Post() {
       )}
 
       <div className="row">
-        <Link className="btn ghost" to="/">
+        <Link className="btn ghost actionWhite" to="/">
           ← Back
         </Link>
         <Link className="btn" to="/write">

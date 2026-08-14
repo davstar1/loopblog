@@ -52,7 +52,7 @@ export default function ProfileManager() {
         <div className="bannerPreview">{banner ? <img src={banner} alt="Current Videos page banner" /> : <span>No banner yet</span>}</div>
         <div className="profileUploadControls">
           <input type="file" accept="image/*" onChange={(event) => setBannerFile(event.target.files?.[0] ?? null)} />
-          <div className="row"><button className="btn" type="button" onClick={uploadBanner} disabled={busy}>{banner ? "Replace banner" : "Upload banner"}</button>{banner && <button className="btn ghost actionWhite" type="button" onClick={removeBanner} disabled={busy}>Remove banner</button>}</div>
+          <div className="row"><button className="btn actionWhite" type="button" onClick={uploadBanner} disabled={busy}>{banner ? "Replace banner" : "Upload banner"}</button>{banner && <button className="btn ghost actionWhite" type="button" onClick={removeBanner} disabled={busy}>Remove banner</button>}</div>
           <small>A wide image works best. You can replace or remove it anytime.</small>
         </div>
       </div>

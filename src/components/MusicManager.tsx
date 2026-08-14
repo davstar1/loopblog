@@ -56,7 +56,7 @@ export default function MusicManager() {
         <input className="sideInput" placeholder="Direct audio URL" value={url} onChange={(event) => setUrl(event.target.value)} />
         <label className="fileField">or upload audio<input type="file" accept="audio/*" onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
         <label className="embedField"><span>Or paste embed code</span><textarea placeholder={'<iframe src="https://w.soundcloud.com/player/…"></iframe>'} value={embedCode} onChange={(event) => setEmbedCode(event.target.value)} /><small>Supports SoundCloud, Spotify, Bandcamp, and Audiomack.</small></label>
-        <button className="btn" type="button" onClick={add} disabled={busy}>{busy ? "Adding…" : "Add track"}</button>
+        <button className="btn actionWhite" type="button" onClick={add} disabled={busy}>{busy ? "Adding…" : "Add track"}</button>
       </div>
       {msg && <p className="muted">{msg}</p>}
       <div className="adminTrackList">{tracks.map((track) => <div key={track.id}><span><b>{track.title}</b><small>{track.artist || "LoopBlog"} · {track.embed_url ? "embed" : "audio"}</small></span><button className="btn ghost actionWhite" onClick={() => remove(track.id)}>Remove</button></div>)}</div>

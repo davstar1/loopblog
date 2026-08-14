@@ -363,7 +363,7 @@ export default function Admin() {
                 onChange={(e) => setYtInput(e.target.value)}
                 style={{ minWidth: 220, flex: 1 }}
               />
-              <button className="btn" type="button" onClick={addVideo} disabled={videosLoading}>
+              <button className="btn actionWhite" type="button" onClick={addVideo} disabled={videosLoading}>
                 Add
               </button>
               <button className="btn ghost" type="button" onClick={refreshVideos} disabled={videosLoading}>
