@@ -133,3 +133,23 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .artworkField { align-items:flex-start; flex-direction:column; }
   .artworkField small { margin-left:0; }
 }
+
+/* Admin music library */
+.adminTrackItem { display:grid!important; grid-template-columns:58px minmax(150px,1fr) auto; align-items:center; gap:14px; }
+.adminTrackArtwork { width:58px; height:58px; overflow:hidden; border:1px solid var(--line); border-radius:8px; background:var(--bg3); display:grid; place-items:center; }
+.adminTrackArtwork img { width:100%; height:100%; object-fit:cover; }
+.adminTrackArtwork span { color:var(--muted); font-size:24px; }
+.adminTrackInfo { min-width:0; }
+.adminTrackInfo b,.adminTrackInfo small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.selectedArtworkName { color:#fff!important; }
+.adminTrackActions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+.artworkPicker { cursor:pointer; }
+.artworkPicker input { display:none; }
+.artworkPicker.disabled { cursor:not-allowed; opacity:.55; }
+.adminTrackActions .dangerAction { color:#fff!important; -webkit-text-fill-color:#fff!important; }
+
+@media(max-width:700px){
+  .adminTrackItem { grid-template-columns:50px minmax(0,1fr); align-items:start; }
+  .adminTrackArtwork { width:50px; height:50px; }
+  .adminTrackActions { grid-column:1/-1; justify-content:flex-start; padding-left:64px; }
+}

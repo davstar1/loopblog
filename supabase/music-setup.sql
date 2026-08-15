@@ -25,8 +25,10 @@ create policy "Owners delete music" on public.music_tracks for delete to authent
 insert into storage.buckets (id, name, public) values ('loopblogmusic', 'loopblogmusic', true) on conflict (id) do update set public = true;
 drop policy if exists "Music files are public" on storage.objects;
 drop policy if exists "Authenticated users upload music" on storage.objects;
+drop policy if exists "Authenticated users delete music" on storage.objects;
 create policy "Music files are public" on storage.objects for select using (bucket_id = 'loopblogmusic');
 create policy "Authenticated users upload music" on storage.objects for insert to authenticated with check (bucket_id = 'loopblogmusic');
+create policy "Authenticated users delete music" on storage.objects for delete to authenticated using (bucket_id = 'loopblogmusic');
 
 create table if not exists public.site_profile (
   id integer primary key default 1 check (id = 1),

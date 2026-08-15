@@ -27,3 +27,23 @@ export async function uploadArtwork(file: File) {
   if (error) throw error;
   return supabase.storage.from(MUSIC_BUCKET).getPublicUrl(path).data.publicUrl;
 }
+
+function storagePath(publicUrl: string | null) {
+  if (!publicUrl) return null;
+  try {
+    const url = new URL(publicUrl);
+    const marker = `/storage/v1/object/public/${MUSIC_BUCKET}/`;
+    const markerIndex = url.pathname.indexOf(marker);
+    if (markerIndex === -1) return null;
+    return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteUploadedMusicFiles(urls: Array<string | null>) {
+  const paths = urls.map(storagePath).filter((path): path is string => Boolean(path));
+  if (paths.length === 0) return;
+  const { error } = await supabase.storage.from(MUSIC_BUCKET).remove(paths);
+  if (error) throw error;
+}

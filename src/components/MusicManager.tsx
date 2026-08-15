@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { loadTracks, uploadArtwork, uploadAudio, type MusicTrack } from "../lib/music";
+import { deleteUploadedMusicFiles, loadTracks, uploadArtwork, uploadAudio, type MusicTrack } from "../lib/music";
 import { supabase } from "../lib/supabase";
 
 const ALLOWED_EMBED_HOSTS = ["soundcloud.com", "w.soundcloud.com", "open.spotify.com", "bandcamp.com", "audiomack.com"];
@@ -24,6 +24,8 @@ export default function MusicManager() {
   const [embedCode, setEmbedCode] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
+  const [trackArtworkFiles, setTrackArtworkFiles] = useState<Record<string, File | undefined>>({});
+  const [busyTrackId, setBusyTrackId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const refresh = () => loadTracks().then(setTracks).catch((error: Error) => setMsg(error.message));
@@ -44,9 +46,53 @@ export default function MusicManager() {
     } catch (error: unknown) { setMsg(error instanceof Error ? error.message : "Could not add track."); } finally { setBusy(false); }
   }
 
-  async function remove(id: string) {
-    const { error } = await supabase.from("music_tracks").delete().eq("id", id);
-    if (error) setMsg(error.message); else await refresh();
+  async function saveArtwork(track: MusicTrack) {
+    const artwork = trackArtworkFiles[track.id];
+    if (!artwork) return;
+    setBusyTrackId(track.id); setMsg(null);
+    let artworkUrl: string | null = null;
+    try {
+      artworkUrl = await uploadArtwork(artwork);
+      const { error } = await supabase.from("music_tracks").update({ artwork_url: artworkUrl }).eq("id", track.id);
+      if (error) throw error;
+      let cleanupFailed = false;
+      if (track.artwork_url) {
+        try { await deleteUploadedMusicFiles([track.artwork_url]); }
+        catch { cleanupFailed = true; }
+      }
+      setTrackArtworkFiles((current) => {
+        const next = { ...current };
+        delete next[track.id];
+        return next;
+      });
+      setMsg(cleanupFailed ? `Artwork updated for ${track.title}, but the old image could not be cleaned up from storage.` : `Artwork updated for ${track.title} ✓`);
+      await refresh();
+    } catch (error: unknown) {
+      if (artworkUrl && artworkUrl !== track.artwork_url) await deleteUploadedMusicFiles([artworkUrl]).catch(() => undefined);
+      setMsg(error instanceof Error ? error.message : "Could not update artwork.");
+    } finally {
+      setBusyTrackId(null);
+    }
+  }
+
+  async function remove(track: MusicTrack) {
+    if (!window.confirm(`Delete “${track.title}” from LoopBlog? This permanently removes its uploaded audio and album artwork.`)) return;
+    setBusyTrackId(track.id); setMsg(null);
+    try {
+      const { error } = await supabase.from("music_tracks").delete().eq("id", track.id);
+      if (error) throw error;
+      try {
+        await deleteUploadedMusicFiles([track.audio_url, track.artwork_url]);
+        setMsg(`${track.title} was permanently deleted ✓`);
+      } catch {
+        setMsg(`${track.title} was removed from the site, but its uploaded files could not be cleaned up from storage.`);
+      }
+      await refresh();
+    } catch (error: unknown) {
+      setMsg(error instanceof Error ? error.message : "Could not delete track.");
+    } finally {
+      setBusyTrackId(null);
+    }
   }
 
   return (
@@ -62,7 +108,26 @@ export default function MusicManager() {
         <button className="btn actionWhite" type="button" onClick={add} disabled={busy}>{busy ? "Adding…" : "Add track"}</button>
       </div>
       {msg && <p className="muted">{msg}</p>}
-      <div className="adminTrackList">{tracks.map((track) => <div key={track.id}><span><b>{track.title}</b><small>{track.artist || "LoopBlog"} · {track.embed_url ? "embed" : "audio"}</small></span><button className="btn ghost actionWhite" onClick={() => remove(track.id)}>Remove</button></div>)}</div>
+      <div className="adminTrackList">
+        {tracks.map((track) => (
+          <div className="adminTrackItem" key={track.id}>
+            <div className="adminTrackArtwork">{track.artwork_url ? <img src={track.artwork_url} alt={`${track.title} album artwork`} /> : <span>♪</span>}</div>
+            <span className="adminTrackInfo">
+              <b>{track.title}</b>
+              <small>{track.artist || "LoopBlog"} · {track.embed_url ? "embed" : "audio"}</small>
+              {trackArtworkFiles[track.id] ? <small className="selectedArtworkName">Selected: {trackArtworkFiles[track.id]?.name}</small> : null}
+            </span>
+            <div className="adminTrackActions">
+              <label className={`btn ghost actionWhite artworkPicker ${busyTrackId === track.id ? "disabled" : ""}`}>
+                {track.artwork_url ? "Replace artwork" : "Add artwork"}
+                <input type="file" accept="image/*" disabled={busyTrackId === track.id} onChange={(event) => setTrackArtworkFiles((current) => ({ ...current, [track.id]: event.target.files?.[0] }))} />
+              </label>
+              {trackArtworkFiles[track.id] ? <button className="btn actionWhite" type="button" disabled={busyTrackId === track.id} onClick={() => saveArtwork(track)}>{busyTrackId === track.id ? "Saving…" : "Save artwork"}</button> : null}
+              <button className="btn dangerAction actionWhite" type="button" disabled={busyTrackId === track.id} onClick={() => remove(track)}>Delete track</button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
