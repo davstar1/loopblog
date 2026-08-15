@@ -1,10 +1,10 @@
 import { supabase } from "./supabase";
 
 export const MUSIC_BUCKET = "loopblogmusic";
-export type MusicTrack = { id: string; title: string; artist: string | null; audio_url: string | null; embed_url: string | null; artwork_url: string | null; created_at: string };
+export type MusicTrack = { id: string; title: string; artist: string | null; audio_url: string | null; embed_url: string | null; artwork_url: string | null; sort_order: number | null; created_at: string };
 
 export async function loadTracks() {
-  const { data, error } = await supabase.from("music_tracks").select("id,title,artist,audio_url,embed_url,artwork_url,created_at").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("music_tracks").select("id,title,artist,audio_url,embed_url,artwork_url,sort_order,created_at").order("sort_order", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as MusicTrack[];
 }

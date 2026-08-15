@@ -135,7 +135,16 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 }
 
 /* Admin music library */
-.adminTrackItem { display:grid!important; grid-template-columns:58px minmax(150px,1fr) auto; align-items:center; gap:14px; }
+.adminOrderHint { margin:0; color:var(--muted); font-size:11px; line-height:1.5; }
+.adminTrackItem { display:grid!important; grid-template-columns:42px 58px minmax(150px,1fr) auto; align-items:center; gap:12px; transition:opacity .18s,background .18s,box-shadow .18s; }
+.adminTrackItem.dragging { opacity:.42; }
+.adminTrackItem.dropTarget { background:rgba(139,66,255,.08); box-shadow:inset 3px 0 #ff3b91; }
+.trackOrderControls { display:grid; justify-items:center; gap:4px; }
+.dragHandle { width:32px; height:30px; border:1px solid var(--line); border-radius:7px; background:var(--bg3); color:#fff; font-size:20px; line-height:1; cursor:grab; }
+.dragHandle:active { cursor:grabbing; }
+.trackOrderControls>span { display:flex!important; grid-template-columns:none!important; gap:3px; }
+.trackOrderControls>span button { width:15px; height:18px; padding:0; border:0; background:transparent; color:var(--muted); font-size:12px; cursor:pointer; }
+.trackOrderControls button:disabled { cursor:not-allowed; opacity:.3; }
 .adminTrackArtwork { width:58px; height:58px; overflow:hidden; border:1px solid var(--line); border-radius:8px; background:var(--bg3); display:grid; place-items:center; }
 .adminTrackArtwork img { width:100%; height:100%; object-fit:cover; }
 .adminTrackArtwork span { color:var(--muted); font-size:24px; }
@@ -149,7 +158,7 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 .adminTrackActions .dangerAction { color:#fff!important; -webkit-text-fill-color:#fff!important; }
 
 @media(max-width:700px){
-  .adminTrackItem { grid-template-columns:50px minmax(0,1fr); align-items:start; }
+  .adminTrackItem { grid-template-columns:38px 50px minmax(0,1fr); align-items:start; }
   .adminTrackArtwork { width:50px; height:50px; }
-  .adminTrackActions { grid-column:1/-1; justify-content:flex-start; padding-left:64px; }
+  .adminTrackActions { grid-column:2/-1; justify-content:flex-start; padding-left:62px; }
 }

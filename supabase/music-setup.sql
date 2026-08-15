@@ -12,7 +12,9 @@ create table if not exists public.music_tracks (
 
 alter table public.music_tracks add column if not exists embed_url text;
 alter table public.music_tracks add column if not exists artwork_url text;
+alter table public.music_tracks add column if not exists sort_order integer;
 alter table public.music_tracks alter column audio_url drop not null;
+create index if not exists music_tracks_sort_order_idx on public.music_tracks (sort_order, created_at desc);
 
 alter table public.music_tracks enable row level security;
 drop policy if exists "Music is publicly readable" on public.music_tracks;

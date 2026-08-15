@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type DragEvent } from "react";
 import { deleteUploadedMusicFiles, loadTracks, uploadArtwork, uploadAudio, type MusicTrack } from "../lib/music";
 import { supabase } from "../lib/supabase";
 
@@ -26,6 +26,9 @@ export default function MusicManager() {
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [trackArtworkFiles, setTrackArtworkFiles] = useState<Record<string, File | undefined>>({});
   const [busyTrackId, setBusyTrackId] = useState<string | null>(null);
+  const [draggedTrackId, setDraggedTrackId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [orderBusy, setOrderBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const refresh = () => loadTracks().then(setTracks).catch((error: Error) => setMsg(error.message));
@@ -40,7 +43,7 @@ export default function MusicManager() {
     try {
       const audioUrl = file ? await uploadAudio(file) : url.trim() || null;
       const artworkUrl = artworkFile ? await uploadArtwork(artworkFile) : null;
-      const { error } = await supabase.from("music_tracks").insert({ title: title.trim(), artist: artist.trim() || null, audio_url: audioUrl, embed_url: embedUrl, artwork_url: artworkUrl });
+      const { error } = await supabase.from("music_tracks").insert({ title: title.trim(), artist: artist.trim() || null, audio_url: audioUrl, embed_url: embedUrl, artwork_url: artworkUrl, sort_order: tracks.length });
       if (error) throw error;
       setTitle(""); setArtist(""); setUrl(""); setEmbedCode(""); setFile(null); setArtworkFile(null); setMsg("Track added ✓"); await refresh();
     } catch (error: unknown) { setMsg(error instanceof Error ? error.message : "Could not add track."); } finally { setBusy(false); }
@@ -95,6 +98,54 @@ export default function MusicManager() {
     }
   }
 
+  async function persistOrder(nextTracks: MusicTrack[]) {
+    setTracks(nextTracks);
+    setOrderBusy(true); setMsg(null);
+    try {
+      const results = await Promise.all(nextTracks.map((track, index) => supabase.from("music_tracks").update({ sort_order: index }).eq("id", track.id).select("id").single()));
+      const failed = results.find((result) => result.error);
+      if (failed?.error) throw failed.error;
+      setMsg("Track order saved ✓");
+    } catch (error: unknown) {
+      setMsg(error instanceof Error ? error.message : "Could not save track order.");
+      await refresh();
+    } finally {
+      setOrderBusy(false);
+    }
+  }
+
+  function moveTrack(trackId: string, direction: -1 | 1) {
+    if (orderBusy) return;
+    const fromIndex = tracks.findIndex((track) => track.id === trackId);
+    const toIndex = fromIndex + direction;
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= tracks.length) return;
+    const nextTracks = [...tracks];
+    const [movedTrack] = nextTracks.splice(fromIndex, 1);
+    nextTracks.splice(toIndex, 0, movedTrack);
+    void persistOrder(nextTracks);
+  }
+
+  function startDragging(event: DragEvent<HTMLButtonElement>, trackId: string) {
+    if (orderBusy) return;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", trackId);
+    setDraggedTrackId(trackId);
+  }
+
+  function dropTrack(event: DragEvent<HTMLDivElement>, targetId: string) {
+    event.preventDefault();
+    const sourceId = draggedTrackId || event.dataTransfer.getData("text/plain");
+    setDraggedTrackId(null); setDropTargetId(null);
+    if (!sourceId || sourceId === targetId || orderBusy) return;
+    const fromIndex = tracks.findIndex((track) => track.id === sourceId);
+    const targetIndex = tracks.findIndex((track) => track.id === targetId);
+    if (fromIndex < 0 || targetIndex < 0) return;
+    const nextTracks = [...tracks];
+    const [movedTrack] = nextTracks.splice(fromIndex, 1);
+    nextTracks.splice(targetIndex, 0, movedTrack);
+    void persistOrder(nextTracks);
+  }
+
   return (
     <div className="card stack adminModule">
       <div className="sectionTitle"><h3>Music</h3><span>{tracks.length} tracks</span></div>
@@ -108,9 +159,17 @@ export default function MusicManager() {
         <button className="btn actionWhite" type="button" onClick={add} disabled={busy}>{busy ? "Adding…" : "Add track"}</button>
       </div>
       {msg && <p className="muted">{msg}</p>}
+      <p className="adminOrderHint">Drag tracks into a new order, or use the arrow buttons on touch screens. Changes save automatically.</p>
       <div className="adminTrackList">
-        {tracks.map((track) => (
-          <div className="adminTrackItem" key={track.id}>
+        {tracks.map((track, index) => (
+          <div className={`adminTrackItem ${draggedTrackId === track.id ? "dragging" : ""} ${dropTargetId === track.id ? "dropTarget" : ""}`} key={track.id} onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; setDropTargetId(track.id); }} onDrop={(event) => dropTrack(event, track.id)}>
+            <div className="trackOrderControls">
+              <button className="dragHandle" type="button" draggable={!orderBusy} disabled={orderBusy} aria-label={`Drag ${track.title} to reorder`} aria-grabbed={draggedTrackId === track.id} onDragStart={(event) => startDragging(event, track.id)} onDragEnd={() => { setDraggedTrackId(null); setDropTargetId(null); }}>⠿</button>
+              <span>
+                <button type="button" disabled={orderBusy || index === 0} onClick={() => moveTrack(track.id, -1)} aria-label={`Move ${track.title} up`}>↑</button>
+                <button type="button" disabled={orderBusy || index === tracks.length - 1} onClick={() => moveTrack(track.id, 1)} aria-label={`Move ${track.title} down`}>↓</button>
+              </span>
+            </div>
             <div className="adminTrackArtwork">{track.artwork_url ? <img src={track.artwork_url} alt={`${track.title} album artwork`} /> : <span>♪</span>}</div>
             <span className="adminTrackInfo">
               <b>{track.title}</b>
