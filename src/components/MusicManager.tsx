@@ -53,7 +53,7 @@ export default function MusicManager() {
     let artworkUrl: string | null = null;
     try {
       artworkUrl = await uploadArtwork(artwork);
-      const { error } = await supabase.from("music_tracks").update({ artwork_url: artworkUrl }).eq("id", track.id);
+      const { error } = await supabase.from("music_tracks").update({ artwork_url: artworkUrl }).eq("id", track.id).select("id").single();
       if (error) throw error;
       let cleanupFailed = false;
       if (track.artwork_url) {

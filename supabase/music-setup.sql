@@ -17,10 +17,14 @@ alter table public.music_tracks alter column audio_url drop not null;
 alter table public.music_tracks enable row level security;
 drop policy if exists "Music is publicly readable" on public.music_tracks;
 drop policy if exists "Authenticated users add music" on public.music_tracks;
+drop policy if exists "Owners update music" on public.music_tracks;
+drop policy if exists "Authenticated users update music" on public.music_tracks;
 drop policy if exists "Owners delete music" on public.music_tracks;
+drop policy if exists "Authenticated users delete music tracks" on public.music_tracks;
 create policy "Music is publicly readable" on public.music_tracks for select using (true);
 create policy "Authenticated users add music" on public.music_tracks for insert to authenticated with check (auth.uid() = user_id);
-create policy "Owners delete music" on public.music_tracks for delete to authenticated using (auth.uid() = user_id);
+create policy "Authenticated users update music" on public.music_tracks for update to authenticated using (true) with check (true);
+create policy "Authenticated users delete music tracks" on public.music_tracks for delete to authenticated using (true);
 
 insert into storage.buckets (id, name, public) values ('loopblogmusic', 'loopblogmusic', true) on conflict (id) do update set public = true;
 drop policy if exists "Music files are public" on storage.objects;
