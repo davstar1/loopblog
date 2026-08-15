@@ -27,6 +27,17 @@ function publicUrlFromPath(path: string | null): string | null {
     .publicUrl;
 }
 
+function extractMarkdownImages(markdown: string) {
+  const images: Array<{ src: string; alt: string }> = [];
+  const pattern = /!\[([^\]]*)\]\((?:<([^>]+)>|([^\s)]+))(?:\s+["'][^"']*["'])?\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(markdown)) !== null) {
+    const src = match[2] || match[3];
+    if (src) images.push({ src, alt: match[1] || "Article image" });
+  }
+  return images;
+}
+
 /* ===========================
    Reading time + TOC helpers
 =========================== */
@@ -353,6 +364,8 @@ export default function Post() {
   const copyTimer = useRef<number | null>(null);
 
   const [isNarrow, setIsNarrow] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const lightboxTouchStart = useRef<number | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 980px)");
@@ -438,6 +451,38 @@ export default function Post() {
 
     return Array.from(new Set(urls));
   }, [post]);
+
+  const articleImages = useMemo(() => {
+    const markdownImages = extractMarkdownImages(bodyText);
+    const images: Array<{ src: string; alt: string }> = [];
+    const seen = new Set<string>();
+    const add = (src: string | null, alt: string) => {
+      if (!src || seen.has(src)) return;
+      seen.add(src);
+      images.push({ src, alt });
+    };
+
+    imageUrls.forEach((src, index) => add(src, `${(post as any)?.title ?? "Journal article"} photo ${index + 1}`));
+    markdownImages.forEach((image) => add(image.src, image.alt));
+    if (images.length === 0) add(coverUrl, `${(post as any)?.title ?? "Journal article"} cover`);
+    return images;
+  }, [bodyText, coverUrl, imageUrls, post]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLightboxIndex(null);
+      if (event.key === "ArrowLeft") setLightboxIndex((current) => current === null ? null : (current - 1 + articleImages.length) % articleImages.length);
+      if (event.key === "ArrowRight") setLightboxIndex((current) => current === null ? null : (current + 1) % articleImages.length);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [articleImages.length, lightboxIndex]);
 
   const readingTimeLabel = useMemo(() => {
     const text = stripMarkdown(bodyText);
@@ -536,8 +581,16 @@ export default function Post() {
           </div>
         );
       },
+      img: ({ src, alt, ...props }: any) => {
+        const index = articleImages.findIndex((image) => image.src === src);
+        return (
+          <button type="button" className="journalInlineImage" onClick={() => index >= 0 && setLightboxIndex(index)} aria-label={`Open ${alt || "article image"} in lightbox`}>
+            <img src={src} alt={alt || "Article image"} {...props} />
+          </button>
+        );
+      },
     };
-  }, []);
+  }, [articleImages]);
 
   if (loading) return <div className="muted" style={{ padding: 24 }}>Loading…</div>;
   if (err) return <div className="error" style={{ padding: 24 }}>Error: {err}</div>;
@@ -731,12 +784,11 @@ export default function Post() {
             style={{ display: "grid", gap: 12, position: "sticky", top: 14 }}
           >
             {coverUrl && (
-              <a
-                href={coverUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="thumb"
-                style={{ textDecoration: "none" }}
+              <button
+                type="button"
+                className="thumb journalCoverButton"
+                onClick={() => setLightboxIndex(Math.max(0, articleImages.findIndex((image) => image.src === coverUrl)))}
+                aria-label="Open article cover in lightbox"
               >
                 <img
                   src={coverUrl}
@@ -748,7 +800,7 @@ export default function Post() {
                     border: "1px solid var(--line)",
                   }}
                 />
-              </a>
+              </button>
             )}
 
             {toc.length > 0 && (
@@ -802,12 +854,12 @@ export default function Post() {
             }}
           >
             {imageUrls.map((url) => (
-              <a
+              <button
                 key={url}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="thumb"
+                type="button"
+                className="thumb journalPhotoButton"
+                onClick={() => setLightboxIndex(Math.max(0, articleImages.findIndex((image) => image.src === url)))}
+                aria-label="Open article photo in lightbox"
               >
                 <img
                   src={url}
@@ -821,10 +873,38 @@ export default function Post() {
                     display: "block",
                   }}
                 />
-              </a>
+              </button>
             ))}
           </div>
         </>
+      )}
+
+      {lightboxIndex !== null && articleImages[lightboxIndex] && (
+        <div className="lightbox journalLightbox" role="dialog" aria-modal="true" aria-label="Article photo viewer">
+          <button className="lbBackdrop" type="button" onClick={() => setLightboxIndex(null)} aria-label="Close article photo viewer" />
+          <div className="lbPanel">
+            <div className="lbTop">
+              <span className="muted">{lightboxIndex + 1} / {articleImages.length}</span>
+              <button className="lbBtn journalLightboxClose" type="button" onClick={() => setLightboxIndex(null)} aria-label="Close lightbox">✕</button>
+            </div>
+            <div
+              className="lbBody"
+              onTouchStart={(event) => { lightboxTouchStart.current = event.touches[0]?.clientX ?? null; }}
+              onTouchEnd={(event) => {
+                const start = lightboxTouchStart.current;
+                const end = event.changedTouches[0]?.clientX;
+                lightboxTouchStart.current = null;
+                if (start === null || end === undefined || Math.abs(end - start) < 45 || articleImages.length < 2) return;
+                setLightboxIndex((current) => current === null ? null : end > start ? (current - 1 + articleImages.length) % articleImages.length : (current + 1) % articleImages.length);
+              }}
+            >
+              {articleImages.length > 1 && <button className="lbNav" type="button" onClick={() => setLightboxIndex((current) => current === null ? null : (current - 1 + articleImages.length) % articleImages.length)} aria-label="Previous">‹</button>}
+              <img className="lbImg" src={articleImages[lightboxIndex].src} alt={articleImages[lightboxIndex].alt} />
+              {articleImages.length > 1 && <button className="lbNav" type="button" onClick={() => setLightboxIndex((current) => current === null ? null : (current + 1) % articleImages.length)} aria-label="Next">›</button>}
+            </div>
+            <div className="lbHint muted">Use ← → keys or swipe to browse · Esc closes</div>
+          </div>
+        </div>
       )}
 
       <div className="row">
