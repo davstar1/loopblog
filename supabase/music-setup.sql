@@ -11,6 +11,7 @@ create table if not exists public.music_tracks (
 );
 
 alter table public.music_tracks add column if not exists embed_url text;
+alter table public.music_tracks add column if not exists artwork_url text;
 alter table public.music_tracks alter column audio_url drop not null;
 
 alter table public.music_tracks enable row level security;

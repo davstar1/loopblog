@@ -16,3 +16,14 @@ export async function uploadAudio(file: File) {
   if (error) throw error;
   return supabase.storage.from(MUSIC_BUCKET).getPublicUrl(path).data.publicUrl;
 }
+
+export async function uploadArtwork(file: File) {
+  const ext = file.name.split(".").pop()?.replace(/[^a-z0-9]/gi, "") || "jpg";
+  const path = `artwork/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from(MUSIC_BUCKET).upload(path, file, {
+    contentType: file.type || "image/jpeg",
+    upsert: false,
+  });
+  if (error) throw error;
+  return supabase.storage.from(MUSIC_BUCKET).getPublicUrl(path).data.publicUrl;
+}

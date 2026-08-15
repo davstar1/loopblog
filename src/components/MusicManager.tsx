@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { loadTracks, uploadAudio, type MusicTrack } from "../lib/music";
+import { loadTracks, uploadArtwork, uploadAudio, type MusicTrack } from "../lib/music";
 import { supabase } from "../lib/supabase";
 
 const ALLOWED_EMBED_HOSTS = ["soundcloud.com", "w.soundcloud.com", "open.spotify.com", "bandcamp.com", "audiomack.com"];
@@ -23,6 +23,7 @@ export default function MusicManager() {
   const [url, setUrl] = useState("");
   const [embedCode, setEmbedCode] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const refresh = () => loadTracks().then(setTracks).catch((error: Error) => setMsg(error.message));
@@ -36,9 +37,10 @@ export default function MusicManager() {
     setBusy(true); setMsg(null);
     try {
       const audioUrl = file ? await uploadAudio(file) : url.trim() || null;
-      const { error } = await supabase.from("music_tracks").insert({ title: title.trim(), artist: artist.trim() || null, audio_url: audioUrl, embed_url: embedUrl });
+      const artworkUrl = artworkFile ? await uploadArtwork(artworkFile) : null;
+      const { error } = await supabase.from("music_tracks").insert({ title: title.trim(), artist: artist.trim() || null, audio_url: audioUrl, embed_url: embedUrl, artwork_url: artworkUrl });
       if (error) throw error;
-      setTitle(""); setArtist(""); setUrl(""); setEmbedCode(""); setFile(null); setMsg("Track added ✓"); await refresh();
+      setTitle(""); setArtist(""); setUrl(""); setEmbedCode(""); setFile(null); setArtworkFile(null); setMsg("Track added ✓"); await refresh();
     } catch (error: unknown) { setMsg(error instanceof Error ? error.message : "Could not add track."); } finally { setBusy(false); }
   }
 
@@ -55,6 +57,7 @@ export default function MusicManager() {
         <input className="sideInput" placeholder="Artist (optional)" value={artist} onChange={(event) => setArtist(event.target.value)} />
         <input className="sideInput" placeholder="Direct audio URL" value={url} onChange={(event) => setUrl(event.target.value)} />
         <label className="fileField">or upload audio<input type="file" accept="audio/*" onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
+        <label className="fileField artworkField">album artwork (square image recommended)<input type="file" accept="image/*" onChange={(event) => setArtworkFile(event.target.files?.[0] ?? null)} />{artworkFile ? <small>{artworkFile.name}</small> : null}</label>
         <label className="embedField"><span>Or paste embed code</span><textarea placeholder={'<iframe src="https://w.soundcloud.com/player/…"></iframe>'} value={embedCode} onChange={(event) => setEmbedCode(event.target.value)} /><small>Supports SoundCloud, Spotify, Bandcamp, and Audiomack.</small></label>
         <button className="btn actionWhite" type="button" onClick={add} disabled={busy}>{busy ? "Adding…" : "Add track"}</button>
       </div>
