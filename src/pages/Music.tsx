@@ -1,9 +1,21 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { loadTracks, type MusicTrack } from "../lib/music";
 import MediaCommunity from "../components/MediaCommunity";
 
 const VU_BARS = 20;
+const WAVEFORM_BARS = 96;
 const EMPTY_LEVELS = Array.from({ length: VU_BARS }, () => 0.06);
+
+function createWaveform(seed: string) {
+  let value = Array.from(seed).reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 2166136261);
+  return Array.from({ length: WAVEFORM_BARS }, (_, index) => {
+    value = ((value * 1664525) + 1013904223) >>> 0;
+    const noise = value / 4294967295;
+    const movement = Math.abs(Math.sin(index * 0.43) * 0.34 + Math.sin(index * 0.117) * 0.2);
+    const edgeFade = Math.min(1, index / 8, (WAVEFORM_BARS - 1 - index) / 8);
+    return Math.round(18 + (noise * 42 + movement * 42) * (0.65 + edgeFade * 0.35));
+  });
+}
 
 function formatTime(value: number) {
   if (!Number.isFinite(value) || value < 0) return "0:00";
@@ -39,6 +51,7 @@ function DirectTrackPlayer({ track, active, registerPlayer, activate, deactivate
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [levels, setLevels] = useState(EMPTY_LEVELS);
+  const waveform = useMemo(() => createWaveform(`${track.id}:${track.title}`), [track.id, track.title]);
 
   const setAudioRef = useCallback((node: HTMLAudioElement | null) => {
     audioRef.current = node;
@@ -169,7 +182,14 @@ function DirectTrackPlayer({ track, active, registerPlayer, activate, deactivate
       </div>
       <div className="progressRow">
         <time>{formatTime(currentTime)}</time>
-        <input className="musicProgress" type="range" min="0" max={duration || 1} step="0.01" value={Math.min(currentTime, duration || 0)} onChange={(event) => seekTo(Number(event.target.value))} style={progressStyle} disabled={!duration} aria-label={`Playback position for ${track.title}`} />
+        <div className="musicWaveform" style={progressStyle}>
+          <div className="musicWaveformBars" aria-hidden="true">
+            {waveform.map((height, index) => (
+              <i className={(index / waveform.length) * 100 <= progress ? "played" : ""} key={index} style={{ "--wave-height": `${height}%` } as CSSProperties} />
+            ))}
+          </div>
+          <input className="musicProgress" type="range" min="0" max={duration || 1} step="0.01" value={Math.min(currentTime, duration || 0)} onChange={(event) => seekTo(Number(event.target.value))} disabled={!duration} aria-label={`Playback position for ${track.title}`} />
+        </div>
         <time>{formatTime(duration)}</time>
       </div>
       <audio ref={setAudioRef} src={track.audio_url ?? undefined} crossOrigin={canAnalyzeSource(track.audio_url) ? "anonymous" : undefined} preload="metadata" onLoadedMetadata={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)} onDurationChange={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => activate(track.id)} onPause={() => { setLevels(EMPTY_LEVELS); deactivate(track.id); }} onEnded={() => { setCurrentTime(0); setLevels(EMPTY_LEVELS); deactivate(track.id); }} />

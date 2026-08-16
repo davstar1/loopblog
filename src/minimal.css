@@ -105,10 +105,17 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 .progressRow { display:grid; grid-template-columns:38px minmax(0,1fr) 38px; align-items:center; gap:9px; }
 .progressRow time { color:#8a8f99; font:600 9px/1 'Manrope',sans-serif; font-variant-numeric:tabular-nums; }
 .progressRow time:last-child { text-align:right; }
-.musicProgress { width:100%; height:4px; margin:0; border:0; border-radius:999px; outline:0; appearance:none; -webkit-appearance:none; cursor:pointer; background:linear-gradient(to right,#ff2b89 0%,#8b42ff var(--music-progress),#343842 var(--music-progress),#343842 100%); }
-.musicProgress::-webkit-slider-thumb { width:13px; height:13px; border:2px solid #111318; border-radius:50%; appearance:none; -webkit-appearance:none; background:#fff; box-shadow:0 0 0 2px rgba(255,255,255,.16); }
-.musicProgress::-moz-range-thumb { width:11px; height:11px; border:2px solid #111318; border-radius:50%; background:#fff; }
-.musicProgress:disabled { cursor:default; opacity:.45; }
+.musicWaveform { position:relative; height:72px; min-width:0; overflow:hidden; border-radius:7px; background:#0d0f12; cursor:pointer; }
+.musicWaveform::before { content:""; position:absolute; z-index:2; left:0; right:0; top:50%; height:1px; background:#08090b; opacity:.9; pointer-events:none; }
+.musicWaveform::after { content:""; position:absolute; z-index:3; top:5px; bottom:5px; left:clamp(1px,var(--music-progress),calc(100% - 1px)); width:1px; background:rgba(255,255,255,.88); box-shadow:0 0 6px rgba(255,255,255,.38); pointer-events:none; }
+.musicWaveform:focus-within { box-shadow:0 0 0 2px rgba(255,255,255,.2),0 0 0 4px rgba(139,66,255,.24); }
+.musicWaveformBars { position:absolute; inset:4px 0; display:flex; align-items:center; gap:2px; overflow:hidden; }
+.musicWaveformBars i { flex:1 1 2px; min-width:1px; height:var(--wave-height); border-radius:1px; background:#555a63; opacity:.76; transition:background .12s,opacity .12s; }
+.musicWaveformBars i.played { background:linear-gradient(180deg,#ffb23e 0%,#ff2b89 48%,#8b42ff 100%); opacity:1; }
+.musicProgress { position:absolute; z-index:4; inset:0; width:100%; height:100%; margin:0; border:0; outline:0; appearance:none; -webkit-appearance:none; cursor:pointer; opacity:0; }
+.musicProgress::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:1px; height:72px; }
+.musicProgress::-moz-range-thumb { width:1px; height:72px; border:0; }
+.musicProgress:disabled { cursor:default; }
 .artworkField { align-items:center; gap:10px; flex-wrap:wrap; }
 .artworkField small { color:#fff; margin-left:auto; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
@@ -129,6 +136,7 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .transportPlay { width:42px; height:42px; }
   .vuMeter { height:38px; gap:2px; padding:6px; }
   .progressRow { grid-template-columns:32px minmax(0,1fr) 32px; gap:6px; }
+  .musicWaveform { height:54px; }
   .musicEmbed { height:152px; }
   .artworkField { align-items:flex-start; flex-direction:column; }
   .artworkField small { margin-left:0; }
