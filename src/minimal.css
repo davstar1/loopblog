@@ -371,11 +371,11 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   }
 
   /* Videos: compact identity and a comfortable two-column gallery. */
-  .mediaPage { width:100%; max-width:none; }
+  .mediaPage { --video-grid-edge:6px; width:100%; max-width:none; }
   .videoBanner {
-    width:calc(100% - 24px);
+    width:auto;
     height:clamp(126px,38vw,176px);
-    margin:0 12px;
+    margin:0 var(--video-grid-edge);
     border-radius:0 0 18px 18px;
   }
   .profileIntro {
@@ -404,7 +404,7 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .profileStats span:last-child { display:none; }
   .gridTabs { height:43px; justify-content:flex-start; padding-left:16px; }
   .gridTabs span { padding:14px 7px 11px; }
-  .videoPostGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:6px; }
+  .videoPostGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:var(--video-grid-edge); }
   .videoPost { border-radius:9px; }
   .videoPost img { transform:none!important; opacity:1!important; }
   .postPlay {
@@ -712,6 +712,7 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 }
 
 @media(max-width:390px){
+  .mediaPage { --video-grid-edge:4px; }
   .brandWord { font-size:16px; }
   .catLink { min-height:52px; }
   .mobileNavLabel { font-size:8px; }
@@ -720,7 +721,7 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .profileMark,
   .profileRing>img { width:66px; height:66px; }
   .profileIntro h1 { font-size:22px; }
-  .videoPostGrid { gap:4px; padding:4px; }
+  .videoPostGrid { gap:4px; }
   .trackRow,
   .embedTrack { grid-template-columns:68px minmax(0,1fr); padding:10px; gap:10px; }
   .trackArt,
