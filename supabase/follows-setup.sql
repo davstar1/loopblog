@@ -1,4 +1,4 @@
--- Run once in the Supabase SQL editor before publishing the Follow button.
+-- Run or rerun this entire file in the Supabase SQL editor when the Follow feature changes.
 create table if not exists public.site_follows (
   visitor_id uuid primary key,
   display_name text,
@@ -68,6 +68,8 @@ end;
 $$;
 
 -- Keep the previous three-argument call working during a rolling site update.
+drop function if exists public.follow_loopblog(uuid, boolean, text);
+
 create or replace function public.follow_loopblog(
   p_visitor_id uuid,
   p_wants_notifications boolean,
