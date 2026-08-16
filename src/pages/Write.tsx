@@ -252,14 +252,14 @@ export default function Write() {
 
         <div className="row">
           <button
-            className="btn"
+            className="btn actionWhite"
             onClick={onSave}
             disabled={saving}
             type="button"
           >
             {saving ? "Publishing..." : "Publish"}
           </button>
-          <button className="btn ghost" onClick={() => nav("/")} type="button">
+          <button className="btn ghost actionWhite" onClick={() => nav("/")} type="button">
             Cancel
           </button>
         </div>

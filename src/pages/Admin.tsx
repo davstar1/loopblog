@@ -79,6 +79,9 @@ export default function Admin() {
   const [videosLoading, setVideosLoading] = useState(false);
   const [ytInput, setYtInput] = useState("");
   const [ytTitle, setYtTitle] = useState("");
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
+  const [editYtInput, setEditYtInput] = useState("");
+  const [editYtTitle, setEditYtTitle] = useState("");
 
   // --- Post manager state (Admin-only UI) ---
   const [posts, setPosts] = useState<PostRow[]>([]);
@@ -246,6 +249,46 @@ export default function Admin() {
     }
   }
 
+  function beginVideoEdit(row: YoutubeRow) {
+    setEditingVideoId(row.id);
+    setEditYtInput(`https://www.youtube.com/watch?v=${row.youtube_id}`);
+    setEditYtTitle(row.title ?? "");
+    setMsg(null);
+  }
+
+  function cancelVideoEdit() {
+    setEditingVideoId(null);
+    setEditYtInput("");
+    setEditYtTitle("");
+  }
+
+  async function saveVideoEdit(row: YoutubeRow) {
+    if (!user) return setMsg("You must be logged in to edit videos.");
+    const youtubeId = extractYouTubeId(editYtInput);
+    if (!youtubeId) return setMsg("Paste a valid YouTube URL (or 11-character video ID).");
+
+    setVideosLoading(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase
+        .from("youtube_videos")
+        .update({ youtube_id: youtubeId, title: editYtTitle.trim() || null })
+        .eq("id", row.id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+
+      cancelVideoEdit();
+      setMsg("Video updated ✅");
+      await refreshVideos();
+    } catch (error: unknown) {
+      const text = error instanceof Error ? error.message : "Failed to update video.";
+      setMsg(text.toLowerCase().includes("duplicate") || text.toLowerCase().includes("unique")
+        ? "That video is already in the gallery."
+        : text);
+      setVideosLoading(false);
+    }
+  }
+
   if (checking) {
     return (
       <section className="stack adminPage" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 14px" }}>
@@ -266,7 +309,7 @@ export default function Admin() {
             <div style={{ fontWeight: 800, textAlign: "center" }}>{user.email}</div>
 
             <div className="row" style={{ justifyContent: "center" }}>
-              <button className="btn" type="button" onClick={() => nav("/write")}>
+              <button className="btn actionWhite" type="button" onClick={() => nav("/write")}>
                 New Post
               </button>
               <button className="btn ghost actionWhite" type="button" onClick={logout} disabled={busy}>
@@ -367,7 +410,7 @@ export default function Admin() {
               <button className="btn actionWhite" type="button" onClick={addVideo} disabled={videosLoading}>
                 Add
               </button>
-              <button className="btn ghost" type="button" onClick={refreshVideos} disabled={videosLoading}>
+              <button className="btn ghost actionWhite" type="button" onClick={refreshVideos} disabled={videosLoading}>
                 Refresh
               </button>
             </div>
@@ -388,9 +431,12 @@ export default function Admin() {
               <div style={{ opacity: 0.85 }}>No videos yet. Add one above.</div>
             ) : (
               <div style={{ display: "grid", gap: 10 }}>
-                {videos.map((v) => (
+                {videos.map((v) => {
+                  const isEditing = editingVideoId === v.id;
+                  return (
                   <div
                     key={v.id}
+                    className="youtubeAdminCard"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "140px minmax(0, 1fr) auto",
@@ -414,22 +460,40 @@ export default function Admin() {
                       loading="lazy"
                     />
 
-                    <div style={{ padding: "10px 0", minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {v.title ? v.title : v.youtube_id}
-                      </div>
-                      <div style={{ opacity: 0.85, fontSize: 12, marginTop: 4 }}>
-                        Added: {new Date(v.created_at).toLocaleString()}
-                      </div>
+                    <div className="youtubeAdminDetails" style={{ padding: "10px 0", minWidth: 0 }}>
+                      {isEditing ? (
+                        <div className="youtubeEditFields">
+                          <input className="sideInput" value={editYtInput} onChange={(event) => setEditYtInput(event.target.value)} placeholder="YouTube URL or video ID" />
+                          <input className="sideInput" value={editYtTitle} onChange={(event) => setEditYtTitle(event.target.value)} placeholder="Video title (optional)" />
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {v.title ? v.title : v.youtube_id}
+                          </div>
+                          <div style={{ opacity: 0.85, fontSize: 12, marginTop: 4 }}>
+                            Added: {new Date(v.created_at).toLocaleString()}
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    <div style={{ padding: "0 12px 0 0" }}>
-                      <button className="btn ghost actionWhite" type="button" onClick={() => removeVideo(v)}>
-                        Remove
-                      </button>
-                    </div>
+                    <div className="youtubeCardActions">
+                      {isEditing ? (
+                        <>
+                          <button className="btn actionWhite youtubeCardAction" type="button" onClick={() => saveVideoEdit(v)}>Save</button>
+                          <button className="btn ghost actionWhite youtubeCardAction" type="button" onClick={cancelVideoEdit}>Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button className="btn ghost actionWhite youtubeCardAction" type="button" onClick={() => beginVideoEdit(v)}>Edit</button>
+                          <button className="btn ghost actionWhite youtubeCardAction" type="button" onClick={() => removeVideo(v)}>Remove</button>
+                        </>
+                      )}
+                      </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -461,7 +525,7 @@ export default function Admin() {
           </label>
 
           <div className="row" style={{ flexWrap: "wrap" }}>
-            <button className="btn" type="submit" disabled={busy}>
+            <button className="btn actionWhite" type="submit" disabled={busy}>
               {busy ? "Logging in…" : "Log in"}
             </button>
             <button className="btn ghost actionWhite" type="button" onClick={() => nav("/")}>

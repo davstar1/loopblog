@@ -400,10 +400,10 @@ export default function EditPost() {
           <h1>Edit Post</h1>
           <p>You must be logged in to edit posts.</p>
           <div className="row">
-            <Link className="btn" to="/admin">
+            <Link className="btn actionWhite" to="/admin">
               Go to Admin
             </Link>
-            <Link className="btn ghost" to="/">
+            <Link className="btn ghost actionWhite" to="/">
               Back Home
             </Link>
           </div>
@@ -427,10 +427,10 @@ export default function EditPost() {
           <h1>Edit Post</h1>
           <div style={{ color: "tomato" }}>{err}</div>
           <div className="row">
-            <Link className="btn ghost" to="/admin">
+            <Link className="btn ghost actionWhite" to="/admin">
               Back to Admin
             </Link>
-            <Link className="btn" to="/">
+            <Link className="btn actionWhite" to="/">
               Home
             </Link>
           </div>
@@ -625,7 +625,7 @@ export default function EditPost() {
 
                         <button
                           type="button"
-                          className="btn ghost"
+                          className="btn ghost actionWhite"
                           onClick={() => removeImage(p)}
                           disabled={saving}
                           style={{ padding: "8px 10px" }}
@@ -642,7 +642,7 @@ export default function EditPost() {
 
           <div className="row" style={{ justifyContent: "space-between" }}>
             <div className="row">
-              <button className="btn" type="submit" disabled={saving || !title.trim()}>
+              <button className="btn actionWhite" type="submit" disabled={saving || !title.trim()}>
                 {saving ? "Saving…" : "Save changes"}
               </button>
               <button

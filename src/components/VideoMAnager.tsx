@@ -163,7 +163,7 @@ export default function VideoManager() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
-            <button className="btn" type="button" onClick={addVideo}>
+            <button className="btn actionWhite" type="button" onClick={addVideo}>
               Add
             </button>
           </div>
@@ -214,7 +214,7 @@ export default function VideoManager() {
       )}
 
       <div className="row">
-        <button className="btn ghost" type="button" onClick={refresh}>
+        <button className="btn ghost actionWhite" type="button" onClick={refresh}>
           Refresh
         </button>
       </div>

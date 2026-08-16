@@ -911,7 +911,7 @@ export default function Post() {
         <Link className="btn ghost actionWhite" to="/">
           ← Back
         </Link>
-        <Link className="btn" to="/write">
+        <Link className="btn actionWhite" to="/write">
           New Post
         </Link>
       </div>
