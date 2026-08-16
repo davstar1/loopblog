@@ -283,3 +283,466 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 @media(max-width:560px){
   .videoBanner { margin-inline:12px; height:150px; border-radius:0 0 16px 16px; }
 }
+
+/* Mobile-first app shell and touch layouts */
+.mobileNavIcon { display:none; }
+
+@media(max-width:700px){
+  html { scroll-padding-top:64px; }
+  body {
+    padding-bottom:calc(72px + env(safe-area-inset-bottom));
+    overscroll-behavior-y:none;
+  }
+  .appMainX { padding-bottom:28px; }
+  .containerX { width:100%; padding-inline:0!important; }
+
+  /* Compact top identity bar + persistent mobile navigation. */
+  .newsNav { top:0; border-bottom-color:rgba(255,255,255,.08); }
+  .newsNavTop { min-height:56px; padding:0 14px; }
+  .newsBrand { gap:8px; font-size:17px; }
+  .newsBrand .navLogo { width:34px!important; height:34px!important; }
+  .newsNavActions .navBtn,
+  .newsNavActions .navUser,
+  .burger { display:none!important; }
+  .newsNavCats,
+  .newsNavCats.open {
+    position:fixed;
+    z-index:1200;
+    left:0;
+    right:0;
+    bottom:0;
+    width:100%;
+    height:auto;
+    margin:0;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    display:grid!important;
+    grid-template-columns:repeat(auto-fit,minmax(58px,1fr));
+    gap:0;
+    border-top:1px solid rgba(255,255,255,.12);
+    background:rgba(12,13,15,.96);
+    box-shadow:0 -12px 30px rgba(0,0,0,.34);
+    backdrop-filter:blur(20px) saturate(150%);
+    -webkit-backdrop-filter:blur(20px) saturate(150%);
+  }
+  .catLink {
+    min-width:0;
+    min-height:54px;
+    padding:5px 2px 4px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    border-radius:12px;
+    font-size:10px;
+    line-height:1;
+    touch-action:manipulation;
+  }
+  .catLink::before,
+  .catLink.active::after { display:none; }
+  .mobileNavIcon {
+    display:grid;
+    width:28px;
+    height:25px;
+    place-items:center;
+    font:700 19px/1 'DM Sans',sans-serif;
+    color:#c6c8ce;
+    transition:color .2s,text-shadow .2s,transform .2s;
+  }
+  .mobileNavLabel {
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:inherit;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.01em;
+    text-transform:none;
+  }
+  .catLink:hover,
+  .catLink:focus-visible,
+  .catLink.active { color:#fff; text-shadow:none; }
+  .catLink:hover .mobileNavIcon,
+  .catLink:focus-visible .mobileNavIcon,
+  .catLink.active .mobileNavIcon {
+    color:#fff;
+    transform:translateY(-1px);
+    text-shadow:0 0 7px rgba(255,214,0,.8),0 0 13px rgba(255,1,105,.78),0 0 20px rgba(118,56,250,.76);
+  }
+
+  /* Videos: compact identity and a comfortable two-column gallery. */
+  .mediaPage { width:100%; max-width:none; }
+  .videoBanner {
+    width:calc(100% - 24px);
+    height:clamp(126px,38vw,176px);
+    margin:0 12px;
+    border-radius:0 0 18px 18px;
+  }
+  .profileIntro {
+    min-height:0;
+    margin:0;
+    padding:22px 16px 20px;
+    grid-template-columns:82px minmax(0,1fr);
+    gap:16px;
+    align-items:start;
+  }
+  .profileRing { width:82px; height:82px; padding:3px; }
+  .profileMark,
+  .profileRing>img { width:76px; height:76px; border-width:3px; }
+  .profileEyebrow { margin-bottom:7px; font-size:9px; }
+  .profileIntro h1 { margin-bottom:7px; font-size:25px; }
+  .profileIntro>div>p:not(.profileEyebrow) {
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    margin:0;
+    font-size:11px;
+    line-height:1.45;
+  }
+  .profileStats { margin-top:10px; gap:12px; font-size:10px; }
+  .profileStats span:last-child { display:none; }
+  .gridTabs { height:43px; justify-content:flex-start; padding-left:16px; }
+  .gridTabs span { padding:14px 7px 11px; }
+  .videoPostGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:6px; }
+  .videoPost { border-radius:9px; }
+  .videoPost img { transform:none!important; opacity:1!important; }
+  .postPlay {
+    inset:8px 8px auto auto;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:rgba(0,0,0,.58);
+    font-size:12px;
+    opacity:1;
+    backdrop-filter:blur(5px);
+  }
+  .postCaption {
+    display:block;
+    padding:34px 9px 8px;
+    font-size:10px;
+    line-height:1.3;
+    opacity:1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .mediaModal {
+    align-items:start;
+    padding:calc(48px + env(safe-area-inset-top)) 8px calc(84px + env(safe-area-inset-bottom));
+  }
+  .mediaModalPanel { width:100%; }
+  .mediaClose {
+    position:fixed;
+    z-index:2;
+    top:calc(7px + env(safe-area-inset-top));
+    right:10px;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:#24272e;
+    font-size:28px;
+  }
+  .mediaModalPanel h2 { margin:12px 4px 0; }
+  .mediaModalPanel .mediaCommunity { margin-inline:4px; }
+
+  /* Music: artwork and metadata stay compact, controls get the full width. */
+  .musicPage { width:100%; max-width:none; padding:34px 12px 18px; }
+  .musicHero,
+  .trackHeader,
+  .trackList { margin-inline:0; }
+  .musicHero { padding:8px 4px 30px; }
+  .musicHero h1 { margin:0 0 10px; font-size:44px; }
+  .musicHero>p:last-child { margin:0; font-size:12px; }
+  .trackHeader { padding:23px 4px 12px; }
+  .trackRow,
+  .embedTrack {
+    margin:0 0 12px;
+    padding:12px;
+    grid-template-columns:76px minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:rgba(255,255,255,.025);
+  }
+  .trackRow:last-child { border-bottom:1px solid var(--line); }
+  .trackArt,
+  .embedTrack .trackArt { display:grid; width:76px; border-radius:10px; }
+  .trackBody { display:contents; }
+  .trackMeta { grid-column:2; min-width:0; display:block; padding-top:2px; }
+  .trackMeta>div { min-width:0; }
+  .trackMeta h2 {
+    overflow:hidden;
+    margin:5px 0 0;
+    font-size:14px;
+    line-height:1.3;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .trackMeta time { display:none; }
+  .audioConsole,
+  .musicEmbed,
+  .trackBody>.mediaCommunity { grid-column:1/-1; width:100%; }
+  .audioConsole { gap:9px; padding-top:2px; }
+  .transportRow { grid-template-columns:1fr; gap:9px; }
+  .transportControls { justify-content:center; gap:9px; }
+  .transportButton { width:44px; height:44px; }
+  .transportPlay { width:50px; height:50px; }
+  .vuMeter { height:42px; padding:6px; }
+  .progressRow { grid-template-columns:30px minmax(0,1fr) 30px; gap:6px; }
+  .musicWaveform { height:60px; }
+  .musicEmbed { height:155px; border-radius:10px; }
+  .mediaCommunity { margin-top:12px; }
+  .communityActions button { min-height:44px; padding:7px 0; }
+  .communityPanel { margin-top:9px; padding:11px; border-radius:12px; }
+  .communityForm { grid-template-columns:1fr; }
+  .communityForm input,
+  .communityForm textarea { min-height:44px!important; font-size:16px!important; }
+  .communityForm button { min-height:44px; }
+
+  /* Journal index: visual cards instead of text-only rows. */
+  .journalPage { width:100%; max-width:none; padding:34px 12px 20px; }
+  .journalHero,
+  .journalTools,
+  .journalList { margin-inline:0; }
+  .journalHero { padding:8px 4px 28px; }
+  .journalHero h1 { margin-bottom:10px; font-size:44px; }
+  .journalHero>p:last-child { margin:0; font-size:12px; line-height:1.55; }
+  .journalTools {
+    padding:14px 4px;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+  .journalTools input {
+    width:100%;
+    min-height:44px;
+    padding:10px 11px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--bg2);
+    font-size:16px;
+  }
+  .journalList { gap:10px; padding-top:12px; }
+  .journalEntry {
+    position:relative;
+    min-height:112px;
+    padding:10px;
+    grid-template-columns:92px minmax(0,1fr);
+    grid-template-rows:auto;
+    gap:12px;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:rgba(255,255,255,.025);
+  }
+  .journalNumber {
+    position:absolute;
+    z-index:1;
+    top:15px;
+    left:15px;
+    padding:3px 5px;
+    border-radius:5px;
+    background:rgba(0,0,0,.62);
+    color:#fff;
+  }
+  .journalEntryCopy { grid-column:2; min-width:0; }
+  .journalEntry time { font-size:9px; }
+  .journalEntry h2 {
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    margin:5px 0 6px;
+    font-size:18px;
+    line-height:1.17;
+  }
+  .journalEntry p {
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    font-size:11px;
+    line-height:1.42;
+  }
+  .journalEntry img {
+    display:block;
+    grid-column:1;
+    grid-row:1;
+    width:92px;
+    height:92px;
+    border-radius:10px;
+    filter:none;
+  }
+  .journalArrow {
+    grid-column:1;
+    grid-row:1;
+    width:92px;
+    height:92px;
+    display:grid;
+    place-items:center;
+    justify-self:auto;
+    border-radius:10px;
+    background:var(--bg3);
+  }
+
+  /* Journal article: one readable column with an inline media rail. */
+  .postShell { width:auto; max-width:none; margin:28px 14px; gap:14px; }
+  .postMeta { gap:8px; flex-wrap:wrap; }
+  .postTitle { font-size:clamp(34px,11vw,48px)!important; line-height:1.02; }
+  .postExcerpt { font-size:17px!important; line-height:1.5; }
+  .postWrap { display:block!important; }
+  .postMain { min-width:0; }
+  .postShell .postBody { font-size:18px; line-height:1.7; }
+  .postSide { position:static!important; width:100%!important; margin-top:24px; }
+  .postImageGrid { grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:7px!important; }
+  .journalCoverButton,
+  .journalInlineImage img { border-radius:12px; }
+  .commentsSection { margin-top:26px; padding-top:20px; }
+  .commentForm { padding:12px; }
+  .commentInput,
+  .commentTextarea { min-height:44px; font-size:16px; }
+  .commentTextarea { min-height:110px; }
+  .commentFormFooter { align-items:flex-end; }
+  .commentSubmitBtn { min-height:44px; padding-inline:18px; }
+  .commentCard { padding:14px 0; }
+  .journalLightbox { padding:0; }
+  .journalLightbox .lbPanel {
+    width:100vw;
+    max-height:100dvh;
+    border-radius:0;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .journalLightbox .lbBody { min-height:66dvh; padding:8px 42px; }
+
+  /* Admin, write and edit forms: single-column and thumb friendly. */
+  .adminPage,
+  .adminPage>.card.stack,
+  .adminModule,
+  section.stack { width:100%; max-width:none; }
+  .adminPage { padding:18px 12px 28px!important; box-sizing:border-box; }
+  .containerX>section.stack:not(.postShell):not(.adminPage) {
+    padding:18px 12px 28px!important;
+    box-sizing:border-box;
+  }
+  .sectionTitle { align-items:flex-start; flex-wrap:wrap; gap:8px; }
+  .adminPage>.card.stack,
+  .adminModule,
+  section.stack>.card.stack {
+    margin-inline:0;
+    padding:15px!important;
+    border-radius:16px!important;
+  }
+  .adminFields { grid-template-columns:1fr; }
+  .fileField,
+  .embedField { grid-column:auto; }
+  .adminPage .field input,
+  .adminPage .field textarea,
+  .adminPage .field select,
+  .adminPage .sideInput,
+  section.stack .field input,
+  section.stack .field textarea,
+  section.stack .field select,
+  section.stack .sideInput {
+    min-height:44px;
+    padding:12px!important;
+    border-radius:12px!important;
+    font-size:16px!important;
+  }
+  .embedField textarea { font-size:16px; }
+  .fileField { min-height:52px; padding:13px; flex-direction:column; gap:9px; }
+  .profileAdminRow { display:grid; grid-template-columns:88px minmax(0,1fr); gap:14px; }
+  .profileRingSmall { width:84px; height:84px; }
+  .profileRingSmall>img { width:76px; height:76px; }
+  .profileUploadControls { min-width:0; }
+  .profileUploadControls .btn,
+  .bannerAdmin .btn { width:100%; min-height:44px; }
+  .bannerAdmin { grid-template-columns:1fr; gap:14px; }
+  .bannerPreview { width:100%; border-radius:0 0 12px 12px; }
+  .adminTrackItem {
+    grid-template-columns:44px 52px minmax(0,1fr);
+    gap:9px;
+    padding:13px 0!important;
+  }
+  .dragHandle { width:40px; height:40px; }
+  .trackOrderControls>span { gap:2px; }
+  .trackOrderControls>span button { width:19px; height:26px; font-size:14px; }
+  .adminTrackArtwork { width:52px; height:52px; }
+  .adminTrackActions { grid-column:1/-1; padding-left:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .adminTrackActions .btn,
+  .youtubeCardAction { min-height:44px; }
+  .youtubeAdminCard { grid-template-columns:100px minmax(0,1fr)!important; }
+  .youtubeAdminCard>img { width:100px!important; height:72px!important; border-radius:9px; }
+  .youtubeCardActions { padding:0 10px 10px; }
+  .followerRow { gap:12px; }
+  .followerActions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .followerActions .btn { min-height:44px; }
+  .managedCommentMeta { align-items:flex-start; flex-wrap:wrap; }
+  .managedCommentMeta time { width:100%; margin-left:0; }
+  .managedCommentActions,
+  .commentEditor>div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .managedCommentActions .btn,
+  .commentEditor .btn { min-height:44px; }
+  .commentFilters button { min-height:40px; }
+  .commentFilters button:last-child { width:100%; margin-left:0; }
+  .followPanel {
+    left:10px;
+    right:10px;
+    bottom:calc(76px + env(safe-area-inset-bottom));
+    max-height:calc(100dvh - 100px - env(safe-area-inset-bottom));
+    border-radius:18px;
+  }
+  .followChoice { min-height:44px; }
+  .followEmail input { min-height:44px; font-size:16px; }
+  .followPanelActions button { min-height:44px; }
+
+  .btn,
+  .btnPrimary,
+  button,
+  a { touch-action:manipulation; }
+  .footer {
+    width:auto;
+    margin:24px 14px 0;
+    padding:22px 0!important;
+    justify-content:center;
+  }
+  .footer span:last-child { display:none; }
+}
+
+@media(max-width:390px){
+  .brandWord { font-size:16px; }
+  .catLink { min-height:52px; }
+  .mobileNavLabel { font-size:8px; }
+  .profileIntro { grid-template-columns:72px minmax(0,1fr); gap:13px; padding-inline:13px; }
+  .profileRing { width:72px; height:72px; }
+  .profileMark,
+  .profileRing>img { width:66px; height:66px; }
+  .profileIntro h1 { font-size:22px; }
+  .videoPostGrid { gap:4px; padding:4px; }
+  .trackRow,
+  .embedTrack { grid-template-columns:68px minmax(0,1fr); padding:10px; gap:10px; }
+  .trackArt,
+  .embedTrack .trackArt { width:68px; }
+  .journalEntry { grid-template-columns:82px minmax(0,1fr); }
+  .journalEntry img,
+  .journalArrow { width:82px; height:82px; }
+  .postImageGrid { grid-template-columns:1fr!important; }
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after {
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
+
+@media(max-width:700px){
+  :where(button,a,input,textarea,select):focus-visible {
+    outline:2px solid #ff55ad!important;
+    outline-offset:3px;
+  }
+}

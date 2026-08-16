@@ -126,11 +126,12 @@ export default function Navbar() {
           onClick={() => setOpen(false)}
           end
         >
-          Videos
+          <span className="mobileNavIcon" aria-hidden="true">▦</span>
+          <span className="mobileNavLabel">Videos</span>
         </NavLink>
 
-        <NavLink to="/music" className={linkClass} onClick={() => setOpen(false)}>Music</NavLink>
-        <NavLink to="/journal" className={linkClass} onClick={() => setOpen(false)}>Journal</NavLink>
+        <NavLink to="/music" className={linkClass} onClick={() => setOpen(false)}><span className="mobileNavIcon" aria-hidden="true">♫</span><span className="mobileNavLabel">Music</span></NavLink>
+        <NavLink to="/journal" className={linkClass} onClick={() => setOpen(false)}><span className="mobileNavIcon" aria-hidden="true">✎</span><span className="mobileNavLabel">Journal</span></NavLink>
 
         {auth.authed && (
           <NavLink
@@ -138,7 +139,8 @@ export default function Navbar() {
             className={linkClass}
             onClick={() => setOpen(false)}
           >
-            Write
+            <span className="mobileNavIcon" aria-hidden="true">＋</span>
+            <span className="mobileNavLabel">Write</span>
           </NavLink>
         )}
 
@@ -147,7 +149,8 @@ export default function Navbar() {
           className={linkClass}
           onClick={() => setOpen(false)}
         >
-          Admin
+          <span className="mobileNavIcon" aria-hidden="true">◉</span>
+          <span className="mobileNavLabel">Admin</span>
         </NavLink>
       </nav>
     </header>
