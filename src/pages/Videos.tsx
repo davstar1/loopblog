@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { loadSiteProfile } from "../lib/profile";
 import MediaCommunity from "../components/MediaCommunity";
+import FollowButton from "../components/FollowButton";
 
 type Video = { id: string; youtube_id: string; title: string | null };
 
@@ -39,6 +40,7 @@ export default function Videos() {
           <h1>LoopBlog</h1>
           <p>A collection of videos, music, and ideas worth keeping in the loop.</p>
           <div className="profileStats"><span><b>{videos.length}</b> videos</span><span>Independent archive</span></div>
+          <FollowButton />
         </div>
       </div>
 
