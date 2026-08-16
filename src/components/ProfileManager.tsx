@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { loadSiteProfile, removeBannerImage, saveBannerImage, saveProfileImage } from "../lib/profile";
+import { FALLBACK_PROFILE_IMAGE, loadSiteProfile, removeBannerImage, removeProfileImage, saveBannerImage, saveProfileImage } from "../lib/profile";
 
 export default function ProfileManager() {
   const [image, setImage] = useState("/loopdot.png");
@@ -30,6 +30,20 @@ export default function ProfileManager() {
     finally { setBusy(false); }
   }
 
+  async function removePhoto() {
+    if (!window.confirm("Remove this profile photo from LoopBlog and permanently delete its file from Supabase?")) return;
+    setBusy(true); setMessage(null);
+    try {
+      const result = await removeProfileImage();
+      setImage(FALLBACK_PROFILE_IMAGE); setFile(null);
+      setMessage(result.cleanupError
+        ? `Profile photo removed from the site, but Supabase could not delete the stored file: ${result.cleanupError}`
+        : "Profile photo removed from the site and deleted from Supabase ✓");
+    } catch (error: unknown) {
+      setMessage(error instanceof Error ? error.message : "Could not remove the profile photo.");
+    } finally { setBusy(false); }
+  }
+
   async function removeBanner() {
     setBusy(true); setMessage(null);
     try { await removeBannerImage(); setBanner(null); setMessage("Video banner removed."); }
@@ -44,7 +58,10 @@ export default function ProfileManager() {
         <div className="profileRing profileRingSmall"><img src={image} alt="Current LoopBlog profile" /></div>
         <div className="profileUploadControls">
           <input type="file" accept="image/*" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-          <button className="btn" type="button" onClick={upload} disabled={busy}>{busy ? "Uploading…" : "Upload photo"}</button>
+          <div className="row">
+            <button className="btn actionWhite" type="button" onClick={upload} disabled={busy}>{busy ? "Working…" : image === FALLBACK_PROFILE_IMAGE ? "Upload photo" : "Replace photo"}</button>
+            {image !== FALLBACK_PROFILE_IMAGE ? <button className="btn dangerAction actionWhite" type="button" onClick={removePhoto} disabled={busy}>Remove photo</button> : null}
+          </div>
           <small>Square photos work best. The gradient ring is added automatically.</small>
         </div>
       </div>

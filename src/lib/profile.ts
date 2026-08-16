@@ -34,3 +34,41 @@ export async function saveProfileImage(file: File): Promise<string> {
   if (error) throw error;
   return publicUrl;
 }
+
+function profileStoragePath(publicUrl: string) {
+  const marker = "/storage/v1/object/public/loopblogimages/";
+  try {
+    const pathname = new URL(publicUrl).pathname;
+    const markerIndex = pathname.indexOf(marker);
+    if (markerIndex === -1) return null;
+    const path = decodeURIComponent(pathname.slice(markerIndex + marker.length));
+    return path.startsWith("profile/") ? path : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function removeProfileImage() {
+  const { data, error: loadError } = await supabase
+    .from("site_profile")
+    .select("profile_image_url")
+    .eq("id", 1)
+    .maybeSingle();
+  if (loadError) throw loadError;
+
+  const currentUrl = data?.profile_image_url as string | null;
+  const { error: updateError } = await supabase
+    .from("site_profile")
+    .update({ profile_image_url: null, updated_at: new Date().toISOString() })
+    .eq("id", 1);
+  if (updateError) throw updateError;
+
+  const path = currentUrl ? profileStoragePath(currentUrl) : null;
+  if (!path) return { deletedFromStorage: false, cleanupError: null };
+
+  const { error: removeError } = await supabase.storage.from("loopblogimages").remove([path]);
+  return {
+    deletedFromStorage: !removeError,
+    cleanupError: removeError?.message ?? null,
+  };
+}
