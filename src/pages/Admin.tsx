@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import MusicManager from "../components/MusicManager";
 import ProfileManager from "../components/ProfileManager";
 import CommentsManager from "../components/CommentsManager";
+import FollowersManager from "../components/FollowersManager";
 
 type YoutubeRow = {
   id: string;
@@ -432,6 +433,7 @@ export default function Admin() {
               </div>
             )}
           </div>
+          <FollowersManager />
           <MusicManager />
           <CommentsManager />
         </>

@@ -9,6 +9,7 @@ export default function FollowButton() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [wantsNotifications, setWantsNotifications] = useState(false);
   const [choice, setChoice] = useState<FollowChoice>("follow");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [panelOpen, setPanelOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -35,11 +36,12 @@ export default function FollowButton() {
     }
     setBusy(true); setMessage(null);
     try {
-      const count = await followLoopBlog(visitorId, choice === "email", choice === "email" ? cleanEmail : null);
+      const count = await followLoopBlog(visitorId, choice === "email", choice === "email" ? cleanEmail : null, name.trim() || null);
       setFollowerCount(count);
       setIsFollowing(true);
       setWantsNotifications(choice === "email");
       setPanelOpen(false);
+      setName("");
       setEmail("");
       setMessage(choice === "email" ? "Following with email updates ✓" : "You’re following LoopBlog ✓");
     } catch (error: unknown) {
@@ -57,6 +59,7 @@ export default function FollowButton() {
       setIsFollowing(false);
       setWantsNotifications(false);
       setChoice("follow");
+      setName("");
       setEmail("");
       setPanelOpen(false);
       setMessage("You’ve unfollowed LoopBlog.");
@@ -88,12 +91,13 @@ export default function FollowButton() {
             <input type="radio" name="follow-choice" checked={choice === "email"} onChange={() => setChoice("email")} />
             <span><b>Follow + email updates</b><small>Save my preference for new posts, videos, and music.</small></span>
           </label>
+          <label className="followEmail"><span>Name (optional)</span><input type="text" autoComplete="name" maxLength={80} placeholder="How you’ll appear to the site owner" value={name} onChange={(event) => setName(event.target.value)} /></label>
           {choice === "email" ? <label className="followEmail"><span>Email address</span><input type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} /></label> : null}
           <div className="followPanelActions">
             <button className="followSave" type="button" disabled={busy} onClick={saveFollow}>{busy ? "Saving…" : isFollowing ? "Save preference" : "Follow"}</button>
             {isFollowing ? <button className="followUnfollow" type="button" disabled={busy} onClick={unfollow}>Unfollow</button> : null}
           </div>
-          <small className="followPrivacy">Your email stays private and is only saved when you choose email updates.</small>
+          <small className="followPrivacy">Your name is optional. Your email stays private and is only saved when you choose email updates.</small>
         </div>
       ) : null}
       {message ? <small className="followMessage" role="status">{message}</small> : null}

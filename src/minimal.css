@@ -221,3 +221,35 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .notificationStatus { display:none; }
   .followPanel { position:fixed; left:16px; right:16px; top:auto; bottom:18px; width:auto; max-height:calc(100vh - 36px); overflow-y:auto; }
 }
+
+/* Private admin follower management */
+.followerMetrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+.followerMetrics>div { display:grid; gap:4px; padding:15px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.025); }
+.followerMetrics b { font-size:24px; letter-spacing:-.04em; }
+.followerMetrics span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+.followerToolbar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.followerToolbar>.sideInput { flex:1; min-width:220px; }
+.followerFilters { display:flex; flex-wrap:wrap; gap:6px; }
+.followerFilters button { border:1px solid var(--line); border-radius:999px; padding:7px 11px; background:transparent; color:var(--muted); font:600 10px 'Manrope',sans-serif; cursor:pointer; }
+.followerFilters button.active { border-color:transparent; background:linear-gradient(100deg,#ff7a00,#ff0169 46%,#7638fa); color:#fff; }
+.followerPrivacy,.followerMessage { margin:0; color:var(--muted); font-size:10px; line-height:1.55; }
+.followerMessage { color:#d8d9dd; }
+.followerList { display:grid; }
+.followerRow { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:18px; padding:16px 0; border-top:1px solid var(--line); }
+.followerIdentity { min-width:0; display:grid; gap:6px; }
+.followerIdentity>div { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.followerIdentity b,.followerIdentity a { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.followerIdentity b { font-size:13px; }
+.followerIdentity a { width:max-content; max-width:100%; color:#d7d9df; font-size:12px; }
+.followerIdentity small { color:var(--muted); font-size:9px; }
+.followerBadge { border:1px solid var(--line); border-radius:999px; padding:4px 7px; color:var(--muted); font-size:9px; }
+.followerBadge.email { border-color:rgba(255,76,170,.34); color:#ff9bcf; background:rgba(211,0,197,.06); }
+.followerActions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+
+@media(max-width:700px){
+  .followerMetrics { grid-template-columns:1fr; }
+  .followerToolbar { align-items:stretch; }
+  .followerToolbar>.sideInput,.followerToolbar>.btn { width:100%; }
+  .followerRow { grid-template-columns:1fr; align-items:start; }
+  .followerActions { justify-content:flex-start; }
+}
