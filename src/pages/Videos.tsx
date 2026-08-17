@@ -35,12 +35,15 @@ export default function Videos() {
       {bannerImage && <div className="videoBanner"><img src={bannerImage} alt="LoopBlog banner" /></div>}
       <div className="profileIntro">
         <div className="profileRing"><img src={profileImage} alt="LoopBlog" className="profileMark" /></div>
-        <div>
-          <p className="profileEyebrow">Video journal</p>
-          <h1>LoopBlog</h1>
+        <div className="profileDetails">
+          <div className="profileHeading">
+            <p className="profileEyebrow">Video journal</p>
+            <h1>LoopBlog</h1>
+          </div>
           <p>A collection of videos, music, and ideas worth keeping in the loop.</p>
-          <div className="profileStats"><span><b>{videos.length}</b> videos</span><span>Independent archive</span></div>
-          <FollowButton />
+          <div className="profileEngagementRow">
+            <FollowButton summaryExtras={<div className="profileStats"><span><b>{videos.length}</b> videos</span><span>Independent archive</span></div>} />
+          </div>
         </div>
       </div>
 

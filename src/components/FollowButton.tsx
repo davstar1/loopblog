@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { followLoopBlog, getFollowVisitorId, loadFollowStatus, unfollowLoopBlog } from "../lib/follows";
 
 type FollowChoice = "follow" | "email";
 
-export default function FollowButton() {
+export default function FollowButton({ summaryExtras }: { summaryExtras?: ReactNode }) {
   const [visitorId] = useState(getFollowVisitorId);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -77,6 +77,7 @@ export default function FollowButton() {
           {loading ? "Loading…" : isFollowing ? "Following ✓" : "Follow LoopBlog"}
         </button>
         <span><b>{followerCount.toLocaleString()}</b> {followerCount === 1 ? "follower" : "followers"}</span>
+        {summaryExtras}
         {wantsNotifications ? <span className="notificationStatus">Email updates on</span> : null}
       </div>
 
