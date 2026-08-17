@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type DragEvent, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { loadPosts, type PostRow } from "../lib/posts";
@@ -13,6 +13,7 @@ type YoutubeRow = {
   user_id: string;
   youtube_id: string;
   title: string | null;
+  sort_order: number | null;
   created_at: string;
 };
 
@@ -82,6 +83,9 @@ export default function Admin() {
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [editYtInput, setEditYtInput] = useState("");
   const [editYtTitle, setEditYtTitle] = useState("");
+  const [draggedVideoId, setDraggedVideoId] = useState<string | null>(null);
+  const [videoDropTargetId, setVideoDropTargetId] = useState<string | null>(null);
+  const [videoOrderBusy, setVideoOrderBusy] = useState(false);
 
   // --- Post manager state (Admin-only UI) ---
   const [posts, setPosts] = useState<PostRow[]>([]);
@@ -143,7 +147,8 @@ export default function Admin() {
     try {
       const { data, error } = await supabase
         .from("youtube_videos")
-        .select("id,user_id,youtube_id,title,created_at")
+        .select("id,user_id,youtube_id,title,sort_order,created_at")
+        .order("sort_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -212,6 +217,7 @@ export default function Admin() {
         user_id: user.id, // ✅ ensures RLS check passes even if DB default isn’t set
         youtube_id: youtubeId,
         title: ytTitle.trim() ? ytTitle.trim() : null,
+        sort_order: Math.max(-1, ...videos.map((video) => video.sort_order ?? -1)) + 1,
       });
 
       if (error) throw error;
@@ -287,6 +293,66 @@ export default function Admin() {
         : text);
       setVideosLoading(false);
     }
+  }
+
+  async function persistVideoOrder(nextVideos: YoutubeRow[]) {
+    if (!user) return setMsg("You must be logged in to reorder videos.");
+    setVideos(nextVideos);
+    setVideoOrderBusy(true);
+    setMsg(null);
+    try {
+      const results = await Promise.all(nextVideos.map((video, index) => supabase
+        .from("youtube_videos")
+        .update({ sort_order: index })
+        .eq("id", video.id)
+        .eq("user_id", user.id)
+        .select("id")
+        .single()));
+      const failed = results.find((result) => result.error);
+      if (failed?.error) throw failed.error;
+      setMsg("Video order saved ✅");
+    } catch (error: unknown) {
+      setMsg(error instanceof Error ? error.message : "Failed to save video order.");
+      await refreshVideos();
+    } finally {
+      setVideoOrderBusy(false);
+    }
+  }
+
+  function moveVideo(videoId: string, direction: -1 | 1) {
+    if (videoOrderBusy) return;
+    const fromIndex = videos.findIndex((video) => video.id === videoId);
+    const toIndex = fromIndex + direction;
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= videos.length) return;
+    const nextVideos = [...videos];
+    const [movedVideo] = nextVideos.splice(fromIndex, 1);
+    nextVideos.splice(toIndex, 0, movedVideo);
+    void persistVideoOrder(nextVideos);
+  }
+
+  function startVideoDrag(event: DragEvent<HTMLDivElement>, videoId: string) {
+    if (videoOrderBusy || editingVideoId === videoId) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", videoId);
+    setDraggedVideoId(videoId);
+  }
+
+  function dropVideo(event: DragEvent<HTMLDivElement>, targetId: string) {
+    event.preventDefault();
+    const sourceId = draggedVideoId || event.dataTransfer.getData("text/plain");
+    setDraggedVideoId(null);
+    setVideoDropTargetId(null);
+    if (!sourceId || sourceId === targetId || videoOrderBusy) return;
+    const fromIndex = videos.findIndex((video) => video.id === sourceId);
+    const targetIndex = videos.findIndex((video) => video.id === targetId);
+    if (fromIndex < 0 || targetIndex < 0) return;
+    const nextVideos = [...videos];
+    const [movedVideo] = nextVideos.splice(fromIndex, 1);
+    nextVideos.splice(targetIndex, 0, movedVideo);
+    void persistVideoOrder(nextVideos);
   }
 
   if (checking) {
@@ -430,13 +496,19 @@ export default function Admin() {
             ) : videos.length === 0 ? (
               <div style={{ opacity: 0.85 }}>No videos yet. Add one above.</div>
             ) : (
-              <div style={{ display: "grid", gap: 10 }}>
-                {videos.map((v) => {
+              <div className="youtubeAdminList" style={{ display: "grid", gap: 10 }}>
+                <p className="adminOrderHint">Drag video tiles into a new order, or use the arrow buttons on touch screens. Changes save automatically.</p>
+                {videos.map((v, index) => {
                   const isEditing = editingVideoId === v.id;
                   return (
                   <div
                     key={v.id}
-                    className="youtubeAdminCard"
+                    className={`youtubeAdminCard ${draggedVideoId === v.id ? "dragging" : ""} ${videoDropTargetId === v.id ? "dropTarget" : ""}`}
+                    draggable={!videoOrderBusy && !isEditing}
+                    onDragStart={(event) => startVideoDrag(event, v.id)}
+                    onDragEnd={() => { setDraggedVideoId(null); setVideoDropTargetId(null); }}
+                    onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; setVideoDropTargetId(v.id); }}
+                    onDrop={(event) => dropVideo(event, v.id)}
                     style={{
                       display: "grid",
                       gridTemplateColumns: "140px minmax(0, 1fr) auto",
@@ -461,6 +533,13 @@ export default function Admin() {
                     />
 
                     <div className="youtubeAdminDetails" style={{ padding: "10px 0", minWidth: 0 }}>
+                      <div className="youtubeOrderControls">
+                        <span className="youtubeDragCue" aria-hidden="true">⠿ Drag to reorder</span>
+                        <span>
+                          <button type="button" disabled={videoOrderBusy || index === 0} onClick={() => moveVideo(v.id, -1)} aria-label={`Move ${v.title || "video"} up`}>↑</button>
+                          <button type="button" disabled={videoOrderBusy || index === videos.length - 1} onClick={() => moveVideo(v.id, 1)} aria-label={`Move ${v.title || "video"} down`}>↓</button>
+                        </span>
+                      </div>
                       {isEditing ? (
                         <div className="youtubeEditFields">
                           <input className="sideInput" value={editYtInput} onChange={(event) => setEditYtInput(event.target.value)} placeholder="YouTube URL or video ID" />

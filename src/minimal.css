@@ -267,6 +267,16 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 .youtubeCardAction { width:88px; min-height:38px; padding:9px 10px!important; border-radius:10px!important; }
 .youtubeEditFields { display:grid; gap:7px; }
 .youtubeEditFields .sideInput { width:100%; }
+.youtubeAdminCard { cursor:grab; transition:opacity .18s,background .18s,box-shadow .18s,border-color .18s; }
+.youtubeAdminCard:active { cursor:grabbing; }
+.youtubeAdminCard.dragging { opacity:.42; }
+.youtubeAdminCard.dropTarget { border-color:rgba(255,72,166,.72)!important; background:rgba(139,66,255,.08)!important; box-shadow:inset 3px 0 #ff3b91,0 0 0 1px rgba(139,66,255,.22); }
+.youtubeOrderControls { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px; }
+.youtubeDragCue { color:var(--muted); font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+.youtubeOrderControls>span:last-child { display:flex; gap:4px; }
+.youtubeOrderControls button { width:30px; height:28px; padding:0; border:1px solid var(--line); border-radius:7px; background:#171a20; color:#fff; font-size:14px; cursor:pointer; }
+.youtubeOrderControls button:hover:not(:disabled) { border-color:#5a6070; background:#292d35; }
+.youtubeOrderControls button:disabled { cursor:not-allowed; opacity:.3; }
 .trackPlay { background:linear-gradient(135deg,#ff2b89,#8b42ff 52%,#ff8b21)!important; color:#fff!important; -webkit-text-fill-color:#fff!important; }
 .communityForm button,.commentSubmitBtn { background:#242832!important; color:#fff!important; -webkit-text-fill-color:#fff!important; }
 .communityForm button:hover,.commentSubmitBtn:hover:not(:disabled) { background:#343a46!important; }
@@ -276,6 +286,8 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .youtubeAdminCard { grid-template-columns:110px minmax(0,1fr)!important; align-items:start!important; }
   .youtubeAdminCard>img { width:110px!important; height:78px!important; }
   .youtubeAdminDetails { padding-right:10px!important; }
+  .youtubeDragCue { font-size:8px; }
+  .youtubeOrderControls button { width:38px; height:38px; }
   .youtubeCardActions { grid-column:1/-1; grid-template-columns:repeat(2,minmax(0,1fr)); padding:0 12px 12px; }
   .youtubeCardAction { width:100%; }
 }

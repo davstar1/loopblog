@@ -273,7 +273,8 @@ export default function Home() {
 
         const { data, error } = await supabase
           .from("youtube_videos")
-          .select("youtube_id,title")
+          .select("youtube_id,title,sort_order")
+          .order("sort_order", { ascending: true, nullsFirst: false })
           .order("created_at", { ascending: false });
 
         if (error) throw error;

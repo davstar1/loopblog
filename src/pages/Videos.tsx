@@ -4,7 +4,7 @@ import { loadSiteProfile } from "../lib/profile";
 import MediaCommunity from "../components/MediaCommunity";
 import FollowButton from "../components/FollowButton";
 
-type Video = { id: string; youtube_id: string; title: string | null };
+type Video = { id: string; youtube_id: string; title: string | null; sort_order: number | null };
 
 const thumb = (id: string) => `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
 
@@ -16,7 +16,7 @@ export default function Videos() {
   const [bannerImage, setBannerImage] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from("youtube_videos").select("id,youtube_id,title").order("created_at", { ascending: false })
+    supabase.from("youtube_videos").select("id,youtube_id,title,sort_order").order("sort_order", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false })
       .then(({ data }) => { setVideos((data ?? []) as Video[]); setLoading(false); });
   }, []);
 
