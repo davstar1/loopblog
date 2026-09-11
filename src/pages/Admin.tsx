@@ -371,8 +371,7 @@ export default function Admin() {
       {user ? (
         <>
           <div className="card stack" style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
-            <div style={{ textAlign: "center", opacity: 0.9 }}>You’re logged in as:</div>
-            <div style={{ fontWeight: 800, textAlign: "center" }}>{user.email}</div>
+            <div style={{ fontWeight: 800, textAlign: "center" }}>Admin session active</div>
 
             <div className="row" style={{ justifyContent: "center" }}>
               <button className="btn actionWhite" type="button" onClick={() => nav("/write")}>

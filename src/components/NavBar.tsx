@@ -5,7 +5,6 @@ import { supabase } from "../lib/supabase";
 type AuthState = {
   loading: boolean;
   authed: boolean;
-  email?: string | null;
 };
 
 export default function Navbar() {
@@ -33,7 +32,6 @@ export default function Navbar() {
       setAuth({
         loading: false,
         authed: !!session,
-        email: session?.user?.email ?? null,
       });
     }
 
@@ -43,7 +41,6 @@ export default function Navbar() {
       setAuth({
         loading: false,
         authed: !!session,
-        email: session?.user?.email ?? null,
       });
     });
 
@@ -84,21 +81,18 @@ export default function Navbar() {
 
         <div className="newsNavActions">
           {!auth.loading && auth.authed ? (
-            <>
-              <span className="navUser muted">
-                {auth.email ? auth.email : "Logged in"}
-              </span>
-              <button className="navBtn ghost actionWhite" onClick={onLogout} type="button">
-                Log out
-              </button>
-            </>
+            <button className="navBtn ghost actionWhite adminAccessLink" onClick={onLogout} type="button" aria-label="Log out of LoopBlog administration" title="Log out">
+              Log out
+            </button>
           ) : (
             <NavLink
-              className="navBtn"
+              className="navBtn adminAccessLink"
               to="/admin"
               onClick={() => setOpen(false)}
+              aria-label="Open LoopBlog administrator login"
+              title="Administrator login"
             >
-              Log in
+              Admin
             </NavLink>
           )}
 
