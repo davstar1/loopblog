@@ -86,13 +86,13 @@ export default function Navbar() {
             </button>
           ) : (
             <NavLink
-              className="navBtn adminAccessLink"
+              className="navBtn adminAccessLink adminLoginLock"
               to="/admin"
               onClick={() => setOpen(false)}
               aria-label="Open LoopBlog administrator login"
               title="Administrator login"
             >
-              Admin
+              <span aria-hidden="true">🔒</span>
             </NavLink>
           )}
 
