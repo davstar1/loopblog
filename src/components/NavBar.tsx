@@ -138,14 +138,16 @@ export default function Navbar() {
           </NavLink>
         )}
 
-        <NavLink
-          to="/admin"
-          className={linkClass}
-          onClick={() => setOpen(false)}
-        >
-          <span className="mobileNavIcon" aria-hidden="true">◉</span>
-          <span className="mobileNavLabel">Admin</span>
-        </NavLink>
+        {auth.authed && (
+          <NavLink
+            to="/admin"
+            className={linkClass}
+            onClick={() => setOpen(false)}
+          >
+            <span className="mobileNavIcon" aria-hidden="true">◉</span>
+            <span className="mobileNavLabel">Admin</span>
+          </NavLink>
+        )}
       </nav>
     </header>
   );
