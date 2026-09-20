@@ -315,17 +315,22 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 
   /* Compact top identity bar + persistent mobile navigation. */
   .newsNav { top:0; border-bottom-color:rgba(255,255,255,.08); }
-  .newsNavTop { min-height:56px; padding:0 14px; }
+  .newsNavTop { position:relative; min-height:56px; padding:0 14px; }
   .newsBrand { gap:8px; font-size:17px; }
   .newsBrand .navLogo { width:34px!important; height:34px!important; }
   .newsNavActions .navBtn,
   .newsNavActions .navUser,
   .burger { display:none!important; }
   .newsNavActions .adminLoginLock {
+    position:absolute;
+    z-index:3;
+    left:34px;
+    top:26px;
     display:grid!important;
-    width:32px;
-    height:32px;
-    opacity:.34;
+    width:30px;
+    height:30px;
+    font-size:9px!important;
+    opacity:.3;
   }
   .newsNavActions .adminLoginLock:hover { opacity:.62; }
   .newsNavActions .adminLoginLock:focus-visible { opacity:1; }
