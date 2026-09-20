@@ -321,6 +321,14 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .newsNavActions .navBtn,
   .newsNavActions .navUser,
   .burger { display:none!important; }
+  .newsNavActions .adminLoginLock {
+    display:grid!important;
+    width:32px;
+    height:32px;
+    opacity:.34;
+  }
+  .newsNavActions .adminLoginLock:hover { opacity:.62; }
+  .newsNavActions .adminLoginLock:focus-visible { opacity:1; }
   .newsNavCats,
   .newsNavCats.open {
     position:fixed;
