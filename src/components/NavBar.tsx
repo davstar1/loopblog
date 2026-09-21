@@ -148,6 +148,18 @@ export default function Navbar() {
             <span className="mobileNavLabel">Admin</span>
           </NavLink>
         )}
+
+        {!auth.loading && !auth.authed && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) => `catLink mobileAdminLockLink ${isActive ? "active" : ""}`}
+            onClick={() => setOpen(false)}
+            aria-label="Open LoopBlog administrator login"
+            title="Administrator login"
+          >
+            <span className="mobileNavIcon mobileAdminNavLock" aria-hidden="true">🔒</span>
+          </NavLink>
+        )}
       </nav>
     </header>
   );

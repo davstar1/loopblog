@@ -305,6 +305,7 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
 
 /* Mobile-first app shell and touch layouts */
 .mobileNavIcon { display:none; }
+.mobileAdminLockLink { display:none!important; }
 
 @media(max-width:700px){
   html { scroll-padding-top:64px; }
@@ -324,22 +325,8 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
   .newsNavActions .navUser,
   .burger { display:none!important; }
   .newsNavActions .adminLoginLock {
-    position:absolute;
-    z-index:3;
-    left:35px;
-    top:27px;
-    display:grid!important;
-    width:29px;
-    height:29px;
-    border:1px solid rgba(255,255,255,.2)!important;
-    border-radius:50%;
-    background:rgba(12,13,15,.92)!important;
-    color:#d8dbe2!important;
-    box-shadow:0 2px 8px rgba(0,0,0,.48);
-    opacity:.68;
+    display:none!important;
   }
-  .newsNavActions .adminLoginLock:hover { opacity:.9; }
-  .newsNavActions .adminLoginLock:focus-visible { opacity:1; }
   .newsNavCats,
   .newsNavCats.open {
     position:fixed;
@@ -395,6 +382,16 @@ html body #root .dangerAction:hover { background:#66212c!important; border-color
     letter-spacing:.01em;
     text-transform:none;
   }
+  .mobileAdminLockLink { display:flex!important; }
+  .mobileAdminLockLink .mobileNavIcon {
+    height:34px;
+    font-size:17px;
+    filter:grayscale(1) saturate(0);
+    opacity:.58;
+  }
+  .mobileAdminLockLink:hover .mobileNavIcon,
+  .mobileAdminLockLink:focus-visible .mobileNavIcon,
+  .mobileAdminLockLink.active .mobileNavIcon { opacity:1; }
   .catLink:hover,
   .catLink:focus-visible,
   .catLink.active { color:#fff; text-shadow:none; }
